@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document - LABO XV</title>
+    
+    <link rel="stylesheet" href="headerFooter_style.css">
+
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+
+</head>
+<body>
+
+    <style>
+        body{
+            margin: 0;
+        }
+        .section {
+      background-color: #f4f4f4;
+      width: 100%;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      
+    }
+
+    .grid-item {
+      background-color: white;
+      border-radius: 15px; /* Bord arrondi */
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Légère ombre */
+      text-align: center;
+      padding: 10px;
+    }
+
+    .grid-item img {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 1rem;
+    }
+
+    .grid-item p,
+    .grid-item strong,
+    .grid-item ul {
+      color: black;
+      font-size: 1rem;
+
+      text-align: left;
+    }
+
+        /* Section 2 - Comment préparer ma visite */
+    .section2-content {
+      font-size: 20px;
+      display: flex;
+      flex-direction: column;
+      padding: 0 2.5rem 2.5rem 2.5rem;
+
+    }
+    .section2-text h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
+
+
+
+    }
+
+   
+
+    .section2-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      width: 100%;
+    }   
+
+
+    @media (min-width: 1200px) {
+        .section2-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+     
+    }
+
+    
+    @media (min-width: 1024px) {
+
+        .grid-item p,
+    .grid-item strong,
+    .grid-item ul {
+      color: black;
+      font-size: 1rem;
+
+      text-align: left;
+    }
+
+    
+
+        .section2-text h2 {
+      font-size: 2rem;
+      font-weight: 600;
+
+
+    }.section2-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+  
+
+        ul li {
+            font-size: 1.1rem;
+            margin: 15px;
+            padding-left: 1em;
+            position: relative;
+            line-height: 1.1; /* Réduit l'espacement entre les lignes du même <li> */
+                
+            word-wrap: break-word; /* Permet de gérer les longues chaînes de texte */
+
+
+        }
+
+    
+    </style>
+
+    <header>
+        <div class="logo">
+            <a href="index.html">LABO XV</a>
+          </div>
+    </header>
+    
+<section class="section" id="section2">
+    <div class="section2-content">
+      <div class="section2-text">
+        <h2>Préparer ma visite</h2>
+      </div>
+      <div class="section2-grid">
+        <!-- Grid items -->
+        <div class="grid-item">
+          <img src="./image/document.png" alt="Logo 1" />
+          <br />
+          <strong><h7>Documents à apporter</h7></strong>
+          <br /><br />
+<style>
+  ul{
+    line-height: 40px;
+  }
+  p{
+  }
+</style>
+
+
+          <p>
+            Pour toute demande d'analyse, il faudra vous présenter avec les
+            documents suivants :
+          </p>
+          <ul>
+            <li>
+              Une<strong> ORDONNANCE</strong> <u>datée qui permet d'identifier le
+              prescripteur</u> ET le <u>patient</u>.
+          </li>
+          
+            <li>
+              Votre <strong>CARTE VITALE  ou ATTESTATION DE DROITS SECURITE SOCIALE</strong>.
+            </li>
+            <li>Une <strong>carte de MUTUELLE</strong> ou <strong>ATTESTATION MUTUELLE.</strong> </li>
+            <li>Une <strong>PIECE D'IDENTITE</strong> (Carte Nationale d'Identité ou Passeport).</li>
+          </ul>
+        </div>
+        <div class="grid-item">
+          <img src="./image/argent.png" alt="Logo 2" />
+          <br />
+          <strong
+            ><h7>A payer ?</h7>
+            <br /> </strong
+          ><br />
+          <ul>
+            <li>
+                Dans très peu de cas, vous pourrez être amené à payer dans le cas d'analyse(s) non prise(s) en charge (Hors Nomenclature).
+            </li>
+            <li>
+                Si vous ne disposez pas d'Ordonnance ni de carte vitale ni de mutuelle, vous aurez la possibilité de régler par 
+                <strong>espèces</strong> ou par <strong>virement bancaire</strong>.
+            </li>
+        </ul>
+
+        </div>
+        <div class="grid-item">
+          <img src="./image/CarteID.png" alt="Logo 3" />
+          <br />
+          <strong><h7>Comment récupérer vos résultats </h7></strong>
+          <br />
+          <br />
+          <p>Vos résultats vous sont adressés :</p>
+          <ul>
+              <li>Par e-mail à vous sur l'adresse e-mail fournie</li>
+              <li>Par messagerie sécurisée médicale (MSSANTE, APICRYPT) ou FAX à votre médecin prescripteur
+
+
+
+
+
+
+              </li>
+          </ul>
+
+
+
+
+          <ul>
+            <li>
+                Ils vous sont adressés une fois que <u>l'ensemble</u> des analyses prescrites est terminé.
+            </li>
+            <li>
+                <u>Si le Biologiste estime qu'il y a urgence, </u>des résultats partiels sont communiqués à vous et à votre médecin et vous seront adressés par SMS ou par téléphone.
+            </li>
+            <li>
+                Pour des analyses de routine, les résultats vous sont adressés en général avant 16h si vous venez avant 11h.
+            </li>
+            <li>
+                S'il y a des analyses spécialisées, un peu plus longues à être réalisées, vous pourrez adresser un e-mail à 
+                <a href="mailto:laboxv@laboxv.com">laboxv@laboxv.com</a> vers 17h pour vous mettre au courant des analyses déjà terminées.
+            </li>
+        </ul>
+        
+        </body>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2024 LABO XV. Tous droits réservés.</p>
+  </footer>
+    
+  </body>
+
+</html>

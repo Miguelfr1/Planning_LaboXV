@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rendez vous - LABO XV</title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="headerFooter_style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+   
+   <style>
+
+
+body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+        }
+
+
+   
+        body {
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 30px;
+            font-size: 1.5rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+
+        }
+
+        ul li {
+            font-size: 1.1rem;
+            margin: 15px;
+            padding-left: 1em;
+            position: relative;
+            line-height: 1.1; /* Réduit l'espacement entre les lignes du même <li> */
+                
+            word-wrap: break-word; /* Permet de gérer les longues chaînes de texte */
+
+
+        }
+
+       
+
+        ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #007BFF;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 20px;
+        }
+
+        .note {
+            color: #e74c3c;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+
+        /* Alignement côte à côte des analyses fréquentes et rares */
+        .analyses-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .analyses-section > div {
+            width: 48%;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+       
+
+      
+     
+        @media (max-width: 768px) {
+            .analyses-section {
+                flex-direction: column;
+            }
+
+            .analyses-section > div {
+                width: 100%;
+            }
+        }   
+        
+
+    </style>
+
+<link rel="icon" href="./favicon.ico" type="image/x-icon">
+
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+          <a href="index.html">LABO XV</a>
+        </div>
+  
+    
+      
+  
+ 
+        
+  
+    </header>
+    <!-- Contenu principal -->
+    
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <h1>Liste exhaustive des analyses nécessitant d'être à jeun</h1>
+
+        <p class="note">
+            Les paramètres suivants nécessitent un <strong>JEUNE COMPLET DE 12 HEURES</strong>.
+            <br>(On peut s'humecter les lèvres ou boire une lampée d'eau ou de café sans sucre.)
+        </p>
+
+        <!-- Section analyses côte à côte -->
+        <div class="analyses-section">
+            <!-- Analyses fréquentes -->
+            <div>
+                <h2>Analyses fréquentes :</h2>
+                <ul>
+                    <li>GLYCÉMIE</li>
+                    <li>BILAN LIPIDIQUE : Cholestérol, Triglycérides, HDL, LDL,APO A1, APO B</li>
+                    <li>INSULINE</li>
+                    <li>PROLACTINE</li>
+                </ul>
+
+                <p class="section-title">Dites "à jeun", mais en fait recueil à la 1ère miction du matin :</p>
+                <ul>
+                    <li>SUCRE URINAIRE</li>
+                    <li>ALBUMINE URINAIRE</li>
+                </ul>
+            </div>
+
+            <!-- Analyses plus rares -->
+            <div>
+                <h2>Analyses plus rares :</h2>
+                <ul>
+                    <li>CROSSLAPS Sanguins (venir avant 9h)</li>
+                    <li>CROSSLAPS Urinaires</li>
+                    <li>NTX Urinaires</li>
+                    <li>HOMOCYSTÉINE</li>
+                    <li>TESTOSTÉRONE BIODISPONIBLE</li>
+                    <li>GH</li>
+                    <li>ACIDES BILIAIRES TOTAUX</li>
+                    <li>PEPTIDE C</li>
+                    <li>GASTRINE</li>
+                    <li>CATÉCHOLAMINES Sanguins</li>
+                    <li>CATÉCHOLAMINES Urinaires</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 LABO XV. Tous droits réservés.</p>
+    </footer>
+    <script src="headerFooter_script.js"></script>
+
+</body>
+</html>

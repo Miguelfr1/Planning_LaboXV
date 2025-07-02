@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LABO XV</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="headerFooter_style.css">
+
+    
+    <link rel="icon" href="./favicon.ico
+    ">
+  </head>
+  <style>
+
+     
+    .container {
+    display: flex;
+    width: 100%;      
+    position: relative;
+    }
+
+    .map-container {
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      position: relative;
+    }
+    
+
+    .info-box {
+      background-color: rgba(255, 255, 255, 0.842);
+
+      border-radius: 10px;
+      box-shadow: 0 25px 20px rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      margin: 10px;       
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      cursor: pointer;
+      box-sizing: none;
+      overflow: hidden; /* Ajouté pour empêcher le débordement */
+
+
+    }
+
+    .info-box::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 10px;
+      height: 100%;
+      background-color: transparent;
+      transition: width 0.3s ease, background-color 0.3s ease,
+        border-radius 0.3s ease;
+    }
+
+    .info-box.hovered,
+    .info-box.expanded {
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-box.hovered::after,
+    .info-box.expanded::after {
+     
+      border-radius: 10px; /* Bord arrondi pour la bande de couleur */
+      
+    }
+
+   
+
+
+    .info-box h4 {
+      margin: 0 0 10px;
+      font-size: 23px;
+      color: #333;
+    }
+
+    .info-box p {
+      margin: 5px 0;
+      font-size: 18px;
+      color: #666;
+      display: flex;
+      align-items: center;
+    }
+
+    .info-icon {
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+      width: 20px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    .clock-icon {
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+      width: 20px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .status-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #28a745; /* Par défaut ouvert en vert */
+    }
+
+    .status-text.closed {
+      color: #dc3545; /* Fermé en rouge */
+    }
+
+    .arrow {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.3s ease;
+      margin-top: 1px;
+    }
+
+    .info-box.expanded .hours {
+      display: block;
+    }
+
+    .info-box .hours {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .info-box.expanded .arrow {
+      transform: rotate(180deg); /* Flèche pointant vers le haut */
+    }
+
+
+    /* Styles généraux pour les info-box */
+
+    /* Styles pour la partie des horaires */
+    .hours {
+      margin-top: 15px;
+      display: none; /* Caché par défaut, à afficher au clic sur la flèche */
+    }
+
+    .hours-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95em;
+    }
+
+    .hours-table td {
+      padding: 8px 5px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .hours-table td:first-child {
+      font-weight: bold;
+      color: #555;
+    }
+
+    /* Surlignage pour les jours spéciaux */
+    .highlight {
+      color: #e74c3c; /* Rouge pour les jours avec des horaires réduits */
+      font-weight: bold;
+    }
+
+    .closed {
+      color: #999; /* Gris pour les jours où le laboratoire est fermé */
+      font-style: italic;
+    }
+
+    .arrow.open {
+      transform: rotate(
+        180deg
+      ); /* Rotation pour indiquer que les horaires sont visibles */
+    }
+
+    /* Effet au survol pour l'info-box */
+    .info-box:hover {
+      border-color: #ccc;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+
+
+
+    .info-box.expanded {
+    }
+
+    /* Style pour WebKit (Chrome, Safari, Edge) */
+    ::-webkit-scrollbar {
+      width: 10px; /* Largeur de la barre de défilement verticale */
+      height: 10px; /* Hauteur de la barre de défilement horizontale */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(
+        0,
+        0,
+        0,
+        0.3
+      ); /* Couleur semi-transparente du pouce */
+      border-radius: 10px; /* Coins arrondis */
+      border: 2px solid rgba(255, 255, 255, 0.3); /* Bordure légère autour du pouce */
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.1); /* Couleur de la piste */
+      border-radius: 10px; /* Coins arrondis */
+    }
+
+    /* Style pour Firefox */
+    html {
+      scrollbar-width: thin; /* 'auto' | 'thin' | 'none' */
+      scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1); /* Couleur du pouce et de la piste */
+    }
+
+  
+
+
+    .test {
+      border-radius: 10px;
+
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0; /* Derrière les boîtes d'information */
+      background-color: rgba(
+        185,
+        208,
+        212,
+        0.7
+      ); /* Optionnel : un fond blanc semi-transparent */
+
+      display: flex; /* Flexbox pour centrer les boîtes */
+      justify-content: center; /* Centrage horizontal */
+      align-items: center; /* Centrage vertical */
+    }
+    .info-boxes {
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      z-index: 1; /* Keeps the info-boxes above the map */
+      /* Additional styling as needed for layout */
+    }
+
+    .info-box {
+      background-color: rgba(255, 255, 255, 0.842);
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px;
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* To ensure the map is visible but behind the boxes */
+    #map {
+      position: absolute;
+      z-index: -1; /* Map will be behind both the test container and info-boxes */
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+
+    span.status-text {
+      margin-top: 3px;
+    }
+
+    .info-content {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .info-details {
+      margin-top: 32px;
+      flex-grow: 1;
+    }
+
+    .rdv-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #467CD6;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 10px;
+  background-size: 200% 100%;
+  transition: background-position 0.5s ease;
+
+  /* Positionnement absolu dans l'info box */
+  margin-top: 20px;
+}
+
+
+.maps-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #467CD6;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 10px;
+  background-size: 200% 100%;
+  transition: background-position 0.5s ease;
+  border-radius: 12px;
+  border: 0.1px solid #467CD6;
+
+  /* Positionnement absolu dans l'info box */
+  margin-top: 20px;
+      
+    }
+
+    .maps-button:hover {
+      background-color: #f7f7f7; /* Changement de couleur au survol */
+  color: white; /* Change la couleur du texte au survol */
+
+  background-image: linear-gradient(to right, #b4ced4, #2b79a0, #467CD6); /* Dégradé linéaire horizontal */
+
+  background-position: right center; /* Déplacement du dégradé vers la droite */
+    }
+
+
+    .rdv-button:hover {
+  background-color: #f7f7f7; /* Changement de couleur au survol */
+  color: #467CD6; /* Change la couleur du texte au survol */
+  background-image: linear-gradient(to right, #467CD6, #f7f7f7, #b4ced4); /* Dégradé linéaire horizontal */
+  background-position: right center; /* Déplacement du dégradé vers la droite */
+}
+    .info-image {
+      width: 140px;
+      height: 140px;
+      margin-right: 15px; /* Espace entre l'image et le texte */
+    }
+
+    .location-image {
+      width: 140px;
+      height: 140px;
+      margin-right: 15px;
+      object-fit: cover; /* Assure que l'image garde ses proportions */
+      border-radius: 10px;
+    }
+
+    strong{
+          font-weight: 600;
+      }
+
+      @media (min-width: 1024px) {
+        .info-box.hovered::after,
+    .info-box.expanded::after {
+     
+      border-radius: 10px; /* Bord arrondi pour la bande de couleur */
+      background-color: var(--highlight-color);
+    }
+        #map
+        {
+          display: flex;
+        } 
+
+        .test{
+          width: 50%;
+        }
+
+      }
+    .container{
+      max-width: none;
+    }
+
+   
+
+
+  </style> 
+  <body>
+    <header class="header">
+      <div class="logo">
+        <a href="index.html">LABO XV</a>
+      </div>
+
+    
+
+  </header>
+
+
+    <div class="container">
+      <div class="map-container">
+        <div id="map"></div>
+        <div class="test">
+          <div class="info-boxes">
+
+
+
+
+            <div class="info-box" data-marker-index="0">
+              <div class="info-content">
+                <div class="container-gauche">
+                  <h4><strong> MOZART</strong></h4>
+                  <img
+                    class="location-image"
+                    src="./image/mozart.jpg"
+                    alt="Location Image"
+                  />
+                  <!-- Image principale -->
+                </div>
+
+                <div class="info-details">
+                  <p>
+                    <img
+                      class="info-icon"
+                      src="./image/location.png"
+                      alt="location"
+                    />
+                    16, avenue Mozart 75016 PARIS
+                  </p>
+                  <p>
+                    <img class="info-icon" src="./image/mail.png" alt="mail" />
+                    labo.mozart@laboxv.com
+                  </p>
+                  <div class="status">
+                    <img
+                      class="clock-icon"
+                      src="./image/horlogeverte.png"
+                      alt="Clock"
+                    />
+                    <!-- Ajouté -->
+                    <span class="status-text">Ouvert</span>
+                    <img
+                      class="arrow"
+                      src="./image/flecheverte.png"
+                      alt="Arrow"
+                    />
+                  </div>
+                  <div class="hours">
+                    <table class="hours-table">
+                      <tr>
+                        <td>Lundi</td>
+                        <td>07:30-18:00</td>
+                      </tr>
+                      <tr>
+                        <td>Mardi</td>
+                        <td>07:30-18:00</td>
+                      </tr>
+                      <tr>
+                        <td>Mercredi</td>
+                        <td>07:30-18:00</td>
+                      </tr>
+                      <tr>
+                        <td>Jeudi</td>
+                        <td>07:30-18:00</td>
+                      </tr>
+                      <tr>
+                        <td>Vendredi</td>
+                        <td>07:30-18:00</td>
+                      </tr>
+                      <tr>
+                        <td class="highlight">Samedi</td>
+                        <td class="highlight">07:30-16:00</td>
+                      </tr>
+                      <tr>
+                        <td class="closed">Dimanche</td>
+                        <td class="closed">Fermé</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <a href="rendez_vous.php?lab=Mozart" class="rdv-button"><strong>Prendre Rendez-vous</strong></a>
+
+                  <a href="https://www.google.com/maps/dir/?api=1&destination=16,+avenue+Mozart,+75016+PARIS" target="_blank" class="maps-button">
+                    <strong>Obtenir l'itinéraire</strong>
+                  </a>
+                  <!-- Ajout du bouton -->
+                </div>
+              </div>
+            </div>
+
+
+
+
+
+
+
+            <div class="info-box" data-marker-index="1">
+                <div class="info-content">
+                    <div class="container-gauche">
+                      <h4><strong> VAUGIRARD </strong></h4>
+                      <img
+                        class="location-image"
+                        src="./image/vaugirard.jpg"
+                        alt="Location Image"
+                      />
+                      <!-- Image principale -->
+                    </div>
+    
+                    <div class="info-details">
+                      <p>
+                        <img
+                          class="info-icon"
+                          src="./image/location.png"
+                          alt="location"
+                        />
+                        353, rue de Vaugirard 75015 PARIS
+                      </p>
+                      <p>
+                        <img class="info-icon" src="./image/mail.png" alt="mail" />
+                        docs@laboxv.com
+                      </p>
+                      <div class="status">
+                        <img
+                          class="clock-icon"
+                          src="./image/horlogeverte.png"
+                          alt="Clock"
+                        />
+                        <!-- Ajouté -->
+                        <span class="status-text">Ouvert</span>
+                        <img
+                          class="arrow"
+                          src="./image/flecheverte.png"
+                          alt="Arrow"
+                        />
+                      </div>
+                      <div class="hours">
+                        <table class="hours-table">
+                          <tr>
+                            <td>Lundi</td>
+                            <td>07:30-20:00</td>
+                          </tr>
+                          <tr>
+                            <td>Mardi</td>
+                            <td>07:30-20:00</td>
+                          </tr>
+                          <tr>
+                            <td>Mercredi</td>
+                            <td>07:30-20:00</td>
+                          </tr>
+                          <tr>
+                            <td>Jeudi</td>
+                            <td>07:30-20:00</td>
+                          </tr>
+                          <tr>
+                            <td>Vendredi</td>
+                            <td>07:30-20:00</td>
+                          </tr>
+                          <tr>
+                            <td class="highlight">Samedi</td>
+                            <td class="highlight">07:30-16:00</td>
+                          </tr>
+                          <tr>
+                            <td class="highlight">Dimanche</td>
+                            <td class="highlight">09:00-14:00</td>
+                          </tr>
+                        </table>
+                      </div>
+                      <a href="rendez_vous.php?lab=Vaugirard" class="rdv-button"><strong>Prendre Rendez-vous</strong></a>
+
+
+                      <a href="https://www.google.com/maps/dir/?api=1&destination=353,+rue+de+Vaugirard,+75015+PARIS" target="_blank" class="maps-button">
+                        <strong>Obtenir l'itinéraire</strong>
+                      </a>
+                      <!-- Ajout du bouton -->
+                    </div>
+                  </div>
+            </div>
+
+
+
+
+
+
+
+            <div class="info-box" data-marker-index="2">
+                <div class="info-content">
+                    <div class="container-gauche">
+                      <h4><strong> GRIGNON - THIAIS</strong></h4>
+                      <img
+                        class="location-image"
+                        src="./image/thiais.jpg"
+                        alt="Location Image"
+                      />
+                      <!-- Image principale -->
+                    </div>
+    
+                    <div class="info-details">
+                      <p>
+                        <img
+                          class="info-icon"
+                          src="./image/location.png"
+                          alt="location"
+                        />
+                        19, rue Pavé de Grignon 94320 THIAIS
+                      </p>
+                      <p>
+                        <img class="info-icon" src="./image/mail.png" alt="mail" />
+                        grignonlabo@orange.fr
+                      </p>
+
+                      <p>
+                        <img class="info-icon" src="./image/tel.png" alt="tel" />
+                        01 53 68 96 82
+                      </p>
+
+                      <div class="status">
+
+                        <div class="status-info">
+
+
+                        
+                        <img
+                          class="clock-icon"
+                          src="./image/horlogeverte.png"
+                          alt="Clock"
+                        />
+                        <!-- Ajouté -->
+                        <span class="status-text">Ouvert</span>
+                        <img
+                          class="arrow"
+                          src="./image/flecheverte.png"
+                          alt="Arrow"
+                        />
+
+                        
+                    </div>
+                      </div>
+                      <div class="hours">
+                        <table class="hours-table">
+                          <tr>
+                            <td>Lundi</td>
+                            <td>07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td>Mardi</td>
+                            <td>07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td>Mercredi</td>
+                            <td>07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td>Jeudi</td>
+                            <td>07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td>Vendredi</td>
+                            <td>07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td class="highlight">Samedi</td>
+                            <td class="highlight">07:30-14:30</td>
+                          </tr>
+                          <tr>
+                            <td class="highlight">Dimanche</td>
+                            <td class="highlight">09:00-13:00</td>
+                          </tr>
+                        </table>
+                      </div>
+                      <a href="rendez_vous.php?lab=Grignon - Thiais" class="rdv-button"><strong>Prendre Rendez-vous</strong></a>
+
+
+                      <a href="https://www.google.com/maps/dir/?api=1&destination=19,+pavé+de,grignon,+94320+thiais" target="_blank" class="maps-button">
+                        <strong>Obtenir l'itinéraire</strong>
+                      </a>
+                     
+                     
+                    </div>
+                  </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 LABO XV. Tous droits réservés.</p>
+    </footer>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGXge67J5WsaxV4fMakPT4C-yGI8lty5k"></script>
+    <script>
+        const icons = [
+          "./image/marqueurviolet.png",
+          "./image/marqueurrouge.png",
+          "./image/marqueurorange.png",
+        ];
+
+        const markers = [];
+        let selectedMarkerIndex = null;
+
+        const hoursData = [
+          {
+            // MOZART
+            week: { open: "07:30", close: "18:00" },
+            saturday: { open: "07:30", close: "16:00" },
+            sunday: { open: null, close: null }, // Fermé le dimanche
+          },
+          {
+            // LABO XV
+            week: { open: "07:30", close: "20:00" },
+            saturday: { open: "07:30", close: "16:00" },
+            sunday: { open: "09:00", close: "14:00" },
+          },
+          {
+            // THIAIS
+            week: { open: "07:30", close: "14:30" },
+            saturday: { open: "07:30", close: "14:30" },
+            sunday: { open: "09:00", close: "13:00" },
+          },
+        ];
+
+        function timeStringToMinutes(timeString) {
+    if (!timeString) return null;
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  function updateStatus() {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+    document.querySelectorAll(".info-box").forEach((infoBox, index) => {
+      let hours;
+      if (dayOfWeek === 6) {
+        // Samedi
+        hours = hoursData[index].saturday;
+      } else if (dayOfWeek === 0) {
+        // Dimanche
+        hours = hoursData[index].sunday;
+      } else {
+        // Semaine (Lundi à Vendredi)
+        hours = hoursData[index].week;
+      }
+
+      const openTimeMinutes = timeStringToMinutes(hours.open);
+      const closeTimeMinutes = timeStringToMinutes(hours.close);
+
+      const isOpen =
+        openTimeMinutes !== null &&
+        currentTimeMinutes >= openTimeMinutes &&
+        currentTimeMinutes <= closeTimeMinutes;
+
+      const statusText = infoBox.querySelector(".status-text");
+      const arrowIcon = infoBox.querySelector(".arrow");
+      const clockIcon = infoBox.querySelector(".clock-icon");
+
+      statusText.textContent = isOpen ? "Ouvert" : "Fermé";
+      statusText.classList.toggle("closed", !isOpen);
+
+      // Mettre à jour l'image de la flèche et de l'horloge selon le statut
+      arrowIcon.src = isOpen ? "./image/flecheverte.png" : "./image/flecherouge.png";
+      clockIcon.src = isOpen ? "./image/horlogeverte.png" : "./image/horlogerouge.png";
+    });
+  }
+
+
+        function handleBoxClick(index) {
+          const infoBoxes = document.querySelectorAll(".info-box");
+
+          // Si une autre box est déjà sélectionnée, on la réinitialise
+          if (selectedMarkerIndex !== null && selectedMarkerIndex !== index) {
+            markers[selectedMarkerIndex].setIcon({
+              url: icons[selectedMarkerIndex],
+              scaledSize: new google.maps.Size(45, 45),
+            });
+            infoBoxes[selectedMarkerIndex].classList.remove("expanded");
+            infoBoxes[selectedMarkerIndex].classList.remove("hovered"); // Retire aussi l'état "hover"
+          }
+
+          // Si la même box est cliquée à nouveau, on la réduit
+          if (selectedMarkerIndex === index) {
+            selectedMarkerIndex = null;
+            infoBoxes[index].classList.remove("expanded");
+          } else {
+            // Si une nouvelle box est sélectionnée, on l'agrandit
+            selectedMarkerIndex = index;
+            markers[index].setIcon({
+              url: icons[index],
+              scaledSize: new google.maps.Size(50, 50),
+            });
+            infoBoxes[index].classList.add("expanded");
+
+            // Assure-toi que la boîte est entièrement visible
+            setTimeout(() => {
+              infoBoxes[index].scrollTop = infoBoxes[index].scrollHeight;
+            }, 300); // La durée doit correspondre à la durée de la transition CSS
+          }
+        }
+
+        function initMap() {
+          const locations = [
+            { lat: 48.8571864, lng: 2.2726514 }, // MOZART
+            { lat: 48.836884, lng: 2.2960659 }, // LABO XV
+            { lat: 48.7562864, lng: 2.3994395 }, // THIAIS
+          ];
+
+          const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 11.5,
+            center: { lat: 48.859979, lng: 2.221961 },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: true,
+            styles: [
+              /* styles ici */
+            ],
+          });
+
+          locations.forEach((location, index) => {
+            const marker = new google.maps.Marker({
+              position: location,
+              map: map,
+              icon: {
+                url: icons[index],
+                scaledSize: new google.maps.Size(45, 45),
+              },
+            });
+
+            markers[index] = marker;
+
+            google.maps.event.addListener(marker, "click", () => {
+              handleBoxClick(index);
+            });
+
+            google.maps.event.addListener(marker, "mouseover", () => {
+              if (index !== selectedMarkerIndex) {
+                marker.setIcon({
+                  url: icons[index],
+                  scaledSize: new google.maps.Size(50, 50),
+                });
+                document
+                  .querySelectorAll(".info-box")
+                  [index].classList.add("hovered");
+              }
+            });
+
+            google.maps.event.addListener(marker, "mouseout", () => {
+              if (index !== selectedMarkerIndex) {
+                marker.setIcon({
+                  url: icons[index],
+                  scaledSize: new google.maps.Size(45, 45),
+                });
+                document
+                  .querySelectorAll(".info-box")
+                  [index].classList.remove("hovered");
+              }
+            });
+          });
+
+          document.querySelectorAll(".info-box").forEach((infoBox, index) => {
+            
+            infoBox.style.setProperty(
+              "--highlight-color",
+              icons[index].includes("violet")
+                ? "#8e44ad"
+                : icons[index].includes("rouge")
+                ? "#e74c3c"
+                : "#f39c12"
+            ); // Couleur basée sur l'icône du marqueur
+
+            infoBox.addEventListener("click", () => {
+              handleBoxClick(index);
+            });
+
+            infoBox.addEventListener("mouseover", () => {
+              if (window.innerWidth >= 1024) {
+
+              if (index !== selectedMarkerIndex) {
+                markers[index].setIcon({
+                  url: icons[index],
+                  scaledSize: new google.maps.Size(50, 50),
+                });
+                infoBox.classList.add("hovered");
+              }
+            }
+            });
+
+            infoBox.addEventListener("mouseout", () => {
+              if (window.innerWidth >= 1024) {
+
+              if (index !== selectedMarkerIndex) {
+                markers[index].setIcon({
+                  url: icons[index],
+                  scaledSize: new google.maps.Size(45, 45),
+                });
+                infoBox.classList.remove("hovered");
+              }}
+            });
+          });
+
+          updateStatus(); // Appel initial pour mettre à jour le statut
+        }
+
+        window.addEventListener("error", function (event) {
+          if (event.message.includes("Google Maps JavaScript API")) {
+            console.error("Erreur de chargement de Google Maps :", event.message);
+          }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+          updateStatus(); // Met à jour le statut des boîtes d'information au chargement de la page
+          initMap(); // Initialise la carte Google Maps
+        });
+
+        document.querySelectorAll(".rdv-button").forEach(button => {
+        button.addEventListener("click", function(event) {
+      event.stopPropagation(); // Empêche l'ouverture de la box
+      // Redirection vers la page de rendez-vous
+    });
+  });
+
+      </script>
+
+<script src="headerFooter_script.js"></script>
+
+  </body>
+</html>

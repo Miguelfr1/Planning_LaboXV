@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>LABO XV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="headerFooter_style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <style>
+      /* Global reset */
+      * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+      }
+  
+      body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          overflow-x: hidden; /* Évite le défilement horizontal */
+      }
+  
+    
+  
+      .main-image {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          text-align: center;
+          width: 100%;
+          max-width: 1200px; /* Limite la largeur maximale */
+          margin: auto;
+      }
+  
+      .card-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          justify-content: center;
+          width: 100%;
+      }
+  
+      .card {
+          background-color: white;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          text-align: center;
+          flex: 1 1 calc(33.333% - 40px); /* S'adapte à l'espace disponible */
+          max-width: 300px;
+      }
+  
+      .horraire {
+          display: grid;
+          grid-template-columns: auto auto auto;
+          text-align: left;
+          gap: 5px;
+          margin-top: 10px;
+      }
+  
+      .button-container {
+          display: flex;
+          justify-content: center;
+          gap: 120px;
+          flex-wrap: wrap; /* Permet de passer à la ligne sur petits écrans */
+          margin: 25px 0;
+      }
+      
+  
+      .round-button {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 200px;
+          height: 100px;
+          text-align: center;
+          background-color: #467CD6;
+          color: white;
+          border-radius: 50%;
+          font-size: 14px;
+          font-weight: bold;
+          text-decoration: none;
+          transition: background-color 0.3s ease;
+          overflow-wrap: break-word;
+      }
+  
+      .round-button:hover {
+          background-color: #2980b9;
+      }
+  
+      .square-button-container {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          flex-wrap: wrap;
+          padding: 20px;
+      }
+  
+      .square-button {
+          flex: 1 1 calc(20% - 20px); /* S'adapte à l'espace disponible */
+          
+          max-width: 350px;
+          max-height: 180px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #e0e0e0;
+          text-align: center;
+          font-size: 14px;
+          font-weight: bold;
+          text-decoration: none;
+          color: black;
+          transition: background-color 0.3s ease;
+          flex-direction: column;
+          padding: 10px;
+      }
+  
+      .square-button img {
+          width: 40px;
+          margin-bottom: 10px;
+      }
+  
+      .square-button:hover {
+          background-color: #d0d0d0;
+      }
+  
+      /* Media queries */
+      @media (max-width: 1024px) {
+          .round-button {
+              width: 150px;
+              height: 75px;
+              font-size: 12px;
+          }
+  
+          .card {
+              flex: 1 1 calc(50% - 20px); /* Deux colonnes sur tablettes */
+          }
+  
+          .square-button {
+              flex: 1 1 calc(45% - 20px);
+          }
+      }
+  
+      @media (max-width: 768px) {
+          .card {
+              flex: 1 1 100%; /* Une seule colonne sur mobile */
+          }
+  
+          .square-button {
+              flex: 1 1 100%;
+          }
+      }
+  </style>
+  
+</head>
+
+<body>
+    <header>
+         <div class="logo">
+            <a href="index.html">LABO XV</a>
+            <div class="subtitle">Laboratoires Docteur Awaida</div>
+        </div>
+    </header>
+
+    <section class="main-image">
+        <div class="container">
+            <div class="card-container">
+                <div class="card">
+                    <h3>Mozart</h3>
+                    <p>16, avenue Mozart<br>75016 PARIS</p>
+                    <div class="horraire">
+                        <p>Lundi au Vendredi</p><p>:</p><p>7h30 - 18h00</p>
+                        <p>Samedi</p><p>:</p><p>7h30 - 16h00</p>
+                        <p>Dimanche</p><p>:</p><p>FERME</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Vaugirard</h3>
+                    <p>353, rue de Vaugirard<br>75015 PARIS</p>
+                    <div class="horraire">
+                        <p>Lundi au Vendredi</p><p>:</p><p>7h30 - 20h00</p>
+                        <p>Samedi</p><p>:</p><p>7h30 - 16h00</p>
+                        <p>Dimanche</p><p>:</p><p>9h00 - 14h00</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Grignon - Thiais</h3>
+                    <p>19, rue Pavé de Grignon<br>94320 THIAIS</p>
+                    <div class="horraire">
+                        <p>Lundi au Samedi</p><p>:</p><p>7h30 - 14h30</p>
+                        <p>Dimanche</p><p>:</p><p>9h00 - 13h00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="button-container">
+        <a href="apporter.html" class="round-button">Préparer ma Visite</a>
+        <a href="ist.html" class="round-button">Dépistage gratuit sans ordonnance HIV - IST</a>
+    </div>
+
+    <div class="square-button-container">
+        <a href="recueil.html" class="square-button">
+            <img src="./image/interrogation.png" alt="Icone">
+            <span>Rester à Jeun ?</span>
+        </a>
+        <a href="preconisation.html" class="square-button">
+            <img src="./image/manuel.png" alt="Icone">
+            <span>Modes Prélèvements et Recueils</span>
+        </a>
+        <a href="rendezvous.html" class="square-button" style="background-color: pink;">
+            <img src="./image/location.png" alt="Icone">
+            <span>Nos Adresses - Prendre rendez-vous</span>
+        </a>
+        <a href="mailto:laboxv@laboxv.com" class="square-button">
+            <img src="./image/mail.png" alt="Icone">
+            <span>Nous Écrire<br>(Réponse < 1 heure)</span>
+        </a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 LABO XV. Tous droits réservés.</p>
+    </footer>
+
+    <script src="headerFooter_script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

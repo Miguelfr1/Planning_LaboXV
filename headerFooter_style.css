@@ -1,0 +1,46 @@
+  /* Structure de la page */
+
+
+ 
+
+  @font-face {
+    font-family: 'ComicSansItalic';
+    src: url('comic-sans-italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+header .subtitle {
+  font-size: 1.5rem;
+}
+
+header {
+  text-align: center;
+}
+
+  header .logo a {
+    font-size: 3rem;
+    color: #467CD6;
+    font-family: 'ComicSansItalic', sans-serif;
+    font-style: italic;
+    text-decoration: none;
+  }
+
+  .logo{
+    text-align: center;
+  }
+
+  footer {
+    color: black  ;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+footer p {
+    margin: 0;
+}
+ 
