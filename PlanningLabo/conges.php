@@ -43,7 +43,7 @@ function formatDateFr($date) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="style2.css">
+    <link rel="stylesheet" href="css/style2.css">
     <title>Labo XV</title>
     <style>
         .laboratory-buttons { display: flex; justify-content: space-between; }
@@ -308,7 +308,8 @@ function formatDateFr($date) {
             </div>
         </main>
     </section>
-    <script src="script3.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/script3.js"></script>
 
     <script>
   document.addEventListener('DOMContentLoaded', function () {

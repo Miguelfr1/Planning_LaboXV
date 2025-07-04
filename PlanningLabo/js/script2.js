@@ -2,18 +2,6 @@ function toggleForm() {
 	document.querySelector('.create-user').classList.toggle('open');
 }
 
-const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
-
-allSideMenu.forEach(item=> {
-const li = item.parentElement;
-
-item.addEventListener('click', function () {
-	allSideMenu.forEach(i=> {
-		i.parentElement.classList.remove('active');
-	})
-	li.classList.add('active');
-})
-});
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -83,82 +71,5 @@ data.sort((a, b) => {
         .catch(error => console.error('Erreur lors de la récupération des données:', error));
 }
 	
-
-
-// TOGGLE SIDEBAR
-// TOGGLE SIDEBAR avec sauvegarde localStorage
-const menuBar = document.querySelector('#content nav .bx.bx-menu');
-const sidebar = document.getElementById('sidebar');
-
-// ---- RESTAURATION au chargement ----
-if (localStorage.getItem('sidebarState') === 'open') {
-    sidebar.classList.remove('hide');
-} else {
-    sidebar.classList.add('hide');
-}
-
-// ---- SAUVEGARDE au clic ----
-menuBar.addEventListener('click', function () {
-    sidebar.classList.toggle('hide');
-    if (sidebar.classList.contains('hide')) {
-        localStorage.setItem('sidebarState', 'closed');
-    } else {
-        localStorage.setItem('sidebarState', 'open');
-    }
-});
-
-
-
-
-
-
-
-
-const searchButton = document.querySelector('#content nav form .form-input button');
-const searchButtonIcon = document.querySelector('#content nav form .form-input button .bx');
-const searchForm = document.querySelector('#content nav form');
-
-searchButton.addEventListener('click', function (e) {
-if(window.innerWidth < 576) {
-	e.preventDefault();
-	searchForm.classList.toggle('show');
-	if(searchForm.classList.contains('show')) {
-		searchButtonIcon.classList.replace('bx-search', 'bx-x');
-	} else {
-		searchButtonIcon.classList.replace('bx-x', 'bx-search');
-	}
-}
-})
-
-
-
-
-
-if(window.innerWidth < 768) {
-sidebar.classList.add('hide');
-} else if(window.innerWidth > 576) {
-searchButtonIcon.classList.replace('bx-x', 'bx-search');
-searchForm.classList.remove('show');
-}
-
-
-window.addEventListener('resize', function () {
-if(this.innerWidth > 576) {
-	searchButtonIcon.classList.replace('bx-x', 'bx-search');
-	searchForm.classList.remove('show');
-}
-})
-
-
-
-const switchMode = document.getElementById('switch-mode');
-
-switchMode.addEventListener('change', function () {
-if(this.checked) {
-	document.body.classList.add('dark');
-} else {
-	document.body.classList.remove('dark');
-}
-})
 
 

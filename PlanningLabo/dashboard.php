@@ -69,7 +69,7 @@
       href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/style.css" />
 
     <title>Labo XV</title>
 
@@ -329,26 +329,6 @@
                   
               ?>
 
-              <style>
-
-
-
-.slot.month-separator::after {
-    content: '';
-    position: absolute;
-    top: 0px;         /* Dépasse au-dessus */
-    bottom: -5px;      /* Dépasse en-dessous */
-    left: -4px;
-    width: 4px;
-    background: #111;
-    z-index: 20;
-    pointer-events: none; /* Ne bloque pas les clics */
-}
-
-
-
-
-              </style>
               
             </div>
 
@@ -745,7 +725,8 @@ $previousMonth = $currentMonth;
       <!-- MAIN -->
     </section>
     <!-- CONTENT -->
-  <script src="script.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/script.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="export.js"></script>
@@ -755,235 +736,6 @@ $previousMonth = $currentMonth;
       <button onclick="closeAlert()">X</button>
   </div>
 
-  <style>
-      .comment-row-full {
-      grid-column: 1 / -1;
-
-    margin-top: 30px;
-    padding: 10px;
-  }
-
-
-  .wsh {
-      grid-column: 1 / -1;
-
-
-    border-top: 2px solid #ccc;
-  }
-
-  .labo-name {
-  position: absolute;
-  bottom: 1px;
-  left: 1px;
-  
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 4px;
-  z-index: 10;
-  pointer-events: none; /* Ne bloque pas les clics */
-  letter-spacing: 0.5px;
-}
-
-
-  .comment-editor {
-    min-height: 150px;
-    border: 1px solid #aaa;
-    padding: 10px;
-    background-color: #fff;
-    color: #000;
-    outline: none;
-    font-size: 16px;
-    grid-column: 1 / -1;
-
-  }
-
-  .time-bar {
-    position: absolute;
-    top: 0px;       /* pour que la barre ne touche pas le haut */
-    bottom: 0px;    /* pour qu'elle ne touche pas le bas */
-    z-index: 1;
-    /* Pas besoin de background ici, il sera donné dynamiquement en ligne */
-    opacity: 0.88;
-}
-.slot > *:not(.time-bar) {
-    z-index: 2;
-}
-
-  .slot {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centre verticalement */
-  align-items: center;     /* Centre horizontalement */
-  height: 60px;     /* Hauteur fixe */
-}
-
-
-.time-top-left {
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.time-top-right {
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-
-
-  .cell.total-hours-header,
-.cell.total-hours {
-    min-width: 80px;
-    max-width: 90px;
-    width: 85px;
-    font-size: 14px;
-    font-weight: 400;
-    text-align: center;
-    box-sizing: border-box;   /* IMPORTANT */
-    padding-left: 0;
-    padding-right: 0;
-    margin-left: 0;
-    margin-right: 0;
-}
-.cell.total-hours {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #342E37;
-    height: 100%;
-    font-style : italic;
-
-}
-
-.cell.total-hours-header{
-  font-weight: bold;
-
-}
-
-      .alert {
-          position: fixed;
-          top: 50px;
-          left: 50%;
-          transform: translateX(-50%);
-          background-color: #f8d7da;
-          color: #721c24;
-          padding: 15px 20px;
-          border-radius: 5px;
-          border: 1px solid #f5c6cb;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          min-width: 300px;
-          max-width: 80%;
-          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-      }
-      .hidden {
-          display: none;
-      }
-      .alert button {
-          background: none;
-          border: none;
-          color: #721c24;
-          font-weight: bold;
-          cursor: pointer;
-          margin-left: 10px;
-      }
-      .slot.jour-special {
-      background-color: #fceaea !important;
-  }
-
-  .day-special {
-      background-color: #fceaea;
-      font-weight: bold;
-      color: #b10000;
-  }
-
-  .comment-row {
-      display: flex;
-      margin-top: 15px;
-      border-top: 1px solid #ccc;
-      padding-top: 10px;
-  }
-  .comment-row .cell {
-      padding: 5px;
-  }
-  .comment-row-full {
-    grid-column: 1 / -1;
-    margin-top: 20px;
-  }
-
-  .color-palette {
-    margin-bottom: 10px;
-  }
-
-  .color-btn {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    margin-right: 5px;
-    cursor: pointer;
-  }
-  .color-btn:hover {
-    border: 2px solid #000;
-  }
-
-  .comment-editor {
-    min-height: 120px;
-    border: 1px solid #aaa;
-    padding: 10px;
-    background-color: white;
-    outline: none;
-  }
-
-  .color-btn.selected {
-    border: 2px solid black;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
-  }
-
-
-  .search-user {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 2px solid #007BFF;
-    font-size: 16px;
-    margin-left: 10px;
-    width: 210px;
-    transition: border-color 0.3s;
-}
-.search-user:focus {
-    border-color: #0056b3;
-    outline: none;
-}
-
-.slot-before-midi {
-    /* Partie DROITE colorée */
-    background: linear-gradient(
-        -90deg,
-        transparent 49.5%,
-        var(--slotColor, #eee) 50%
-    ) !important;
-}
-
-.slot-apres-midi {
-    /* Partie GAUCHE colorée */
-    background: linear-gradient(
-       -90deg,
-        var(--slotColor, #eee) 50%,
-        transparent 50.5%
-    ) !important;
-}
-
-
-
-  </style>
 
   <script>
       function showAlert(message) {
@@ -1010,48 +762,6 @@ $previousMonth = $currentMonth;
       </div>
   </div>
 
-  <style>
-      .confirm {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background-color: #fff;
-          color: #333;
-          padding: 20px;
-          border-radius: 5px;
-          border: 1px solid #ccc;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-          min-width: 300px;
-          max-width: 80%;
-          z-index: 2000;
-      }
-      .hidden {
-          display: none;
-      }
-      .confirm-buttons {
-          margin-top: 10px;
-          display: flex;
-          gap: 10px;
-        
-      }
-      .confirm button {
-          padding: 8px 12px;
-          border: none;
-          cursor: pointer;
-          border-radius: 5px;
-          font-weight: bold;
-      }
-      #confirm-yes {
-          background-color: #d9534f;
-          color: white;
-      }
-      #confirm-no {
-          background-color: #ccc;
-          color: black;
       }
 
     

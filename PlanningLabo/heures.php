@@ -27,7 +27,7 @@ $userData = $userResult->fetch_assoc();
 	<!-- Boxicons -->
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<!-- My CSS -->
-	<link rel="stylesheet" href="style2.css">
+	<link rel="stylesheet" href="css/style2.css">
 
 	<title>Labo XV</title>
 
@@ -188,10 +188,8 @@ $userData = $userResult->fetch_assoc();
 
 		</main>
 
-		<script src="script2.js">
-
-
-	</script>
+                <script src="js/common.js"></script>
+                <script src="js/script2.js"></script>
 
 <script>
 function filterEmployees() {
@@ -244,7 +242,7 @@ function printSection() {
     const printWindow = window.open('', '', 'height=900,width=1200');
 
     printWindow.document.write('<html><head><title>Décompte d\'heures</title>');
-    printWindow.document.write('<link rel="stylesheet" href="style2.css" type="text/css" />');
+    printWindow.document.write('<link rel="stylesheet" href="css/style2.css" type="text/css" />');
     printWindow.document.write(`
         <style>
         @media print {
