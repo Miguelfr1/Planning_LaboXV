@@ -15,10 +15,7 @@ $userQuery = "SELECT is_admin FROM users WHERE id = '$user_id'";
 $userResult = $conn->query($userQuery);
 $userData = $userResult->fetch_assoc();
 
-if (!$userData['is_admin']) {
-    header("Location: dashboard.php"); // Redirection des non-admins vers Planning
-    exit();
-}
+
 ?>
 
 
@@ -104,11 +101,12 @@ if (!$userData['is_admin']) {
         </li>
 
         <li class="active">
-          <a href="#">
-          
-            <i class="bx bxs-group"></i>
-            <span class="text">Employés</span>
-          </a>
+		<a href="employers.php">
+        <i class="bx bxs-group"></i>
+        <span class="text">
+            <?php echo ($userData['is_admin'] ? 'Collaborateurs' : 'Mon Profil'); ?>
+        </span>
+    </a>
           </li>
 
         </li>
@@ -161,17 +159,21 @@ if (!$userData['is_admin']) {
 		<main>
 			<div class="head-title">
 				<div class="left">
-					<h1>Employés</h1>
+				<?php echo ($userData['is_admin'] ? '<h1>Collaborateurs</h1>' : '<h1>Profil</h1>'); ?>
 				</div>
 			</div>
 
+			<?php if ($userData['is_admin']) { ?>
+
 			<!-- Formulaire de création -->
 			<div class="create-user">
-    <h3 class = "text" onclick="toggleForm()">Créer un nouvel employé <i class='bx bx-chevron-down'></i></h3>
+    <h3 class = "text" onclick="toggleForm()">Créer un nouveau Collaborateur <i class='bx bx-chevron-down'></i></h3>
     <div class="form-container">
         <form method="POST" action="create_user.php">
             <label for="name">Nom :</label>
             <input type="text" id="name" name="name" required>
+			<label for="email">Email :</label>
+<input type="email" id="email" name="email" >
 
             <label for="password">Mot de passe :</label>
             <input type="password" id="password" name="password" required>
@@ -190,7 +192,7 @@ if (!$userData['is_admin']) {
 				<option value="Apprenti">Apprenti Immuno </option>
 				<option value="Apprenti">Apprenti Secretaire </option>
 
-				<option value="Employé">Employé</option>
+				<option value="Collaborateur">Collaborateur</option>
 				<option value="Stagiaire">Stagiaire</option>
 
             </select>
@@ -212,48 +214,68 @@ if (!$userData['is_admin']) {
     </div>
 </div>
 
+<?php } ?>
 
 			<div class="table-data">
 				<div class="order">
 				<div class="head">
-    				<h3>Liste des employés</h3>
-   				    <input type="text" id="searchInput" placeholder="Rechercher un employé..." onkeyup="filterEmployees()">
+
+
+				<?php echo ($userData['is_admin'] ? '<h3>Liste des Collaborateurs</h3>' : '<h3>Mon Profil</h3>'); ?>
+				<?php if ($userData['is_admin']) : ?>
+    <input type="text" id="searchInput" placeholder="Rechercher un Collaborateur..." onkeyup="filterEmployees()">
+<?php endif; ?>
 				</div>
 
 					<table>
 						<thead>
-							<tr>
-								<th>Nom</th>
-								<th>Rôle</th>
-								<th>Laboratoires</th>
-								<th>Modifier</th>
-								<th>Supprimer</th>
-							</tr>
+						<tr>
+    <th>Nom</th>
+    <th>Rôle</th>
+    <th>Laboratoires</th>
+    <th>Modifier</th>
+    <?php if ($userData['is_admin']) { ?>
+        <th>Supprimer</th>
+    <?php } ?>
+</tr>
+
 						</thead>
 						<tbody>
 							<?php
-							$query = "SELECT u.id, u.name, u.role, GROUP_CONCAT(l.laboratory SEPARATOR ', ') AS laboratories
-							FROM users u
-							LEFT JOIN user_laboratories l ON u.id = l.user_id
-							GROUP BY u.id
-							ORDER BY SUBSTRING_INDEX(u.name, ' ', -1) COLLATE utf8mb4_unicode_ci ASC";
+							if ($userData['is_admin']) {
+								// Admin : affiche tous les utilisateurs
+								$query = "SELECT u.id, u.name, u.role, GROUP_CONCAT(l.laboratory SEPARATOR ', ') AS laboratories
+								FROM users u
+								LEFT JOIN user_laboratories l ON u.id = l.user_id
+								GROUP BY u.id
+								ORDER BY SUBSTRING_INDEX(u.name, ' ', -1) COLLATE utf8mb4_unicode_ci ASC";
+							} else {
+								// Non admin : affiche uniquement l'utilisateur connecté
+								$query = "SELECT u.id, u.name, u.role, GROUP_CONCAT(l.laboratory SEPARATOR ', ') AS laboratories
+								FROM users u
+								LEFT JOIN user_laboratories l ON u.id = l.user_id
+								WHERE u.id = '$user_id'
+								GROUP BY u.id";
+							}
 							
-				  
 
 							$result = $conn->query($query);
 
 							if ($result->num_rows > 0) {
 								while ($row = $result->fetch_assoc()) {
 									echo "<tr>";
-									echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-									echo "<td>" . htmlspecialchars($row['role']) . "</td>";
-									echo "<td>" . htmlspecialchars($row['laboratories'] ?? 'Aucun') . "</td>";
-									echo "<td><a href='edit_user.php?id=" . $row['id'] . "'><i class='bx bxs-edit'></i></a></td>";
-									echo "<td><a href='delete_user.php?id=" . $row['id'] . "'><i class='bx bx-message-square-x bx-rotate-270'></i></a></td>";
-									echo "</tr>";
+echo "<td>" . htmlspecialchars($row['name']) . "</td>";
+echo "<td>" . htmlspecialchars(str_replace(',', ', ', $row['role'])) . "</td>";
+echo "<td>" . htmlspecialchars($row['laboratories'] ?? 'Aucun') . "</td>";
+echo "<td><a href='edit_user.php?id=" . $row['id'] . "'><i class='bx bxs-edit'></i></a></td>";
+if ($userData['is_admin']) {
+    echo "<td><a href='delete_user.php?id=" . $row['id'] . "'><i class='bx bx-message-square-x bx-rotate-270'></i></a></td>";
+}
+echo "</tr>";
+
 								}
 							} else {
-								echo "<tr><td colspan='5'>Aucun employé trouvé.</td></tr>";
+								echo "<tr><td colspan='5'>Aucun Collaborateur trouvé.</td></tr>";
 							}
 							
 							?>

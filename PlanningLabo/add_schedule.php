@@ -193,9 +193,24 @@ if (isset($_GET['confirmed_multi_weeks']) && $_GET['confirmed_multi_weeks'] == 1
         $future_week_start    = date('Y-m-d', strtotime("+$i weeks", strtotime($week_start)));
         $future_schedule_date = date('Y-m-d', strtotime($future_week_start . " + " . $jours_semaine[$day_of_week] . " days"));
 
-        if ($i > 0 && in_array($future_schedule_date, $jours_feries)) {
-            continue;
-        }
+        // 1. Sauter les jours fériés (sauf la première semaine qui a déjà eu la vérif)
+if ($i > 0 && in_array($future_schedule_date, $jours_feries)) {
+    continue;
+}
+
+// 2. Sauter si l'utilisateur est en congé sur ce jour
+$checkFutureLeaveStmt = $conn->prepare("SELECT 1 FROM conges WHERE user_id = ? AND ? BETWEEN start_date AND end_date");
+$checkFutureLeaveStmt->bind_param("is", $user_id, $future_schedule_date);
+$checkFutureLeaveStmt->execute();
+$futureLeaveResult = $checkFutureLeaveStmt->get_result();
+
+if ($futureLeaveResult->num_rows > 0) {
+    // En congé ce jour-là, on skip cette semaine
+    $checkFutureLeaveStmt->close();
+    continue;
+}
+$checkFutureLeaveStmt->close();
+
 
         $checkFutureStmt = $conn->prepare("SELECT id FROM schedules WHERE user_id = ? AND day_of_week = ? AND week_start = ? AND laboratory = ?");
         $checkFutureStmt->bind_param("isss", $user_id, $day_of_week, $future_week_start, $laboratory);

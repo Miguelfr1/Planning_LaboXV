@@ -19,8 +19,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const exportBtn = document.createElement("button");
     exportBtn.classList.add("export-btn");
     exportBtn.onclick = exportToPDF;
-    document.querySelector(".head-title .left").appendChild(exportBtn);
-});
+    const searchInput = document.getElementById('search-user');
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateFilters();
+            }
+        });
+    }});
 
 function openModal(userId, dayOfWeek, startTime = '', endTime = '', roles = [], breakDuration = 0) {
     document.getElementById('modal-user-id').value = userId;
@@ -66,12 +73,19 @@ function closeModal() {
 function updateFilters() {
     const dateInput = document.getElementById('week-start-selector');
     const labInput = document.getElementById('lab-selector');
+    const searchInput = document.getElementById('search-user');
+
     const selectedDate = new Date(dateInput.value);
+    const search = searchInput ? searchInput.value.trim() : '';
+
     const selectedLab = labInput.value;
     if (!isNaN(selectedDate)) {
         const formattedDate = selectedDate.toISOString().split('T')[0];
-        window.location.href = `?week_start=${formattedDate}&laboratory=${selectedLab}`;
-    }
+        let url = `?week_start=${formattedDate}&laboratory=${selectedLab}`;
+        if (search !== '') {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+        window.location.href = url;    }
 }
 function getNomFamille(nomComplet) {
     const parts = nomComplet.trim().split(' ');

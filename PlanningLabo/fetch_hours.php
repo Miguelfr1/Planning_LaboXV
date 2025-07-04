@@ -2,6 +2,22 @@
 header('Content-Type: application/json');
 require_once "db.php";
 
+session_start();
+
+$user_id = $_SESSION['user_id'] ?? null;
+$is_admin = 0;
+if ($user_id) {
+    $userQuery = "SELECT is_admin FROM users WHERE id = ?";
+    $stmtUser = $conn->prepare($userQuery);
+    $stmtUser->bind_param('i', $user_id);
+    $stmtUser->execute();
+    $userResult = $stmtUser->get_result();
+    $userData = $userResult->fetch_assoc();
+    
+    $is_admin = $userData['is_admin'] ?? 0;
+    $stmtUser->close();
+}
+
 // Jours fériés
 $jours_feries = [
     '2025-01-01','2025-04-21','2025-05-01',
@@ -189,14 +205,35 @@ WHERE s.week_start <= ?
 GROUP BY u.name, u.id, e.heures_supp_25, e.heures_supp_50
 ";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param(
-  "ssssssssss",
-  $end, $start, $end,
-  $start_time, $end_time,
-  $end, $start, $end,
-  $start_time, $end_time
-);
+
+if (!$is_admin) {
+  // Pour les non-admin : ajoute la condition user_id
+  $sql = str_replace("FROM schedules s", "FROM schedules s", $sql);
+  $sql .= " HAVING u.id = ?";
+}
+
+
+if ($is_admin) {
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param(
+      "ssssssssss",
+      $end, $start, $end,
+      $start_time, $end_time,
+      $end, $start, $end,
+      $start_time, $end_time
+  );
+} else {
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param(
+      "ssssssssssi",
+      $end, $start, $end,
+      $start_time, $end_time,
+      $end, $start, $end,
+      $start_time, $end_time,
+      $user_id
+  );
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 

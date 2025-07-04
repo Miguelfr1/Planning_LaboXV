@@ -66,13 +66,13 @@ data.sort((a, b) => {
             data.forEach(employee => {
                 const row = `
                     <tr>
-                       <td style="font-weight:bold;">${employee.nom}</td>
+                        <td class="col-nom" style="font-weight:bold;">${employee.nom}</td>
                         <td>${Number(employee.heures).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_supp_25).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_supp_50).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_dimanche).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_feries).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
-                        <td>${employee.difference_total}</td>
+                        <td class="col-diff">${employee.difference_total}</td>
 
                            
                     </tr>

@@ -125,11 +125,18 @@ if ($user_id && !$isAdmin) {
         </a>
         <ul class="side-menu top">
             <li><a href="dashboard.php"><i class="bx bxs-dashboard"></i><span class="text">Planning</span></a></li>
-            <?php if ($isAdmin): ?>
                 <li><a href="heures.php"><i class="bx bxs-doughnut-chart"></i><span class="text">Décompte d'heures</span></a></li>
-                <li><a href="employers.php"><i class="bx bxs-group"></i><span class="text">Employés</span></a></li>
-                <li><a href="conges.php"><i class='bx bx-calendar-check'></i><span class="text">Congés</span></a></li>
-            <?php endif; ?>
+
+                <li>
+    <a href="employers.php">
+        <i class="bx bxs-group"></i>
+        <span class="text">
+            <?php echo ($userData['is_admin'] ? 'Collaborateurs' : 'Mon Profil'); ?>
+        </span>
+    </a>
+</li>
+            <li><a href="conges.php"><i class='bx bx-calendar-check'></i><span class="text">Congés</span></a></li>
+
             <li class="active"><a href="badgeuse.php">        <i class='bx bxs-user-check'></i>
             <span class="text">Badgeuse</span></a></li>
         </ul>
@@ -161,7 +168,7 @@ if ($user_id && !$isAdmin) {
                 <div class="table-data">
                     <div class="order">
                         <div class="head">
-                            <h3>Liste des employés</h3>
+                            <h3>Liste des Collaborateurs</h3>
                         </div>
                         <table>
                             <thead>
@@ -296,23 +303,27 @@ $stmt->close();
       
     </script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Sauvegarde/restaure état sidebar (clé UNIQUE partout !)
-    const menuBar = document.querySelector('#content nav .bx.bx-menu');
-    const sidebar = document.getElementById('sidebar');
-    if (menuBar && sidebar) {
-        // --- UTILISE LA MÊME CLÉ ---
-        if (localStorage.getItem("sidebarState") === "closed") {
-            sidebar.classList.add("hide");
-        } else {
-            sidebar.classList.remove("hide");
-        }
-        menuBar.addEventListener('click', function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var sidebar = document.getElementById('sidebar');
+    var menuBtn = document.querySelector('.bx-menu');
+
+    // À l'ouverture de la page, on lit l'état stocké
+    var sidebarState = localStorage.getItem('sidebarState');
+    if (sidebarState === 'open') {
+        sidebar.classList.remove('hide');
+    } else {
+        sidebar.classList.add('hide');
+    }
+
+    // Quand on clique sur le menu
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function () {
             sidebar.classList.toggle('hide');
+            // Sauve l'état actuel
             if (sidebar.classList.contains('hide')) {
-                localStorage.setItem("sidebarState", "closed");
+                localStorage.setItem('sidebarState', 'closed');
             } else {
-                localStorage.setItem("sidebarState", "open");
+                localStorage.setItem('sidebarState', 'open');
             }
         });
     }

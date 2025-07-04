@@ -15,10 +15,7 @@ $userQuery = "SELECT is_admin FROM users WHERE id = '$user_id'";
 $userResult = $conn->query($userQuery);
 $userData = $userResult->fetch_assoc();
 
-if (!$userData['is_admin']) {
-    header("Location: dashboard.php"); // Redirection des non-admins vers Planning
-    exit();
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -86,7 +83,7 @@ if (!$userData['is_admin']) {
           <a href="employers.php">
           
             <i class="bx bxs-group"></i>
-            <span class="text">Employés</span>
+            <span class="text">Collaborateurs</span>
           </a>
           </li>
 
@@ -138,11 +135,18 @@ if (!$userData['is_admin']) {
 
 		<!-- MAIN -->
 		<main>
-			<div class="head-title">
-				<div class="left">
-					<h1>Décompte d'heures</h1>
-				</div>
-			</div>
+		<div class="head-title">
+    <div class="left">
+        <h1>Décompte d'heures</h1>
+        <?php if ($userData['is_admin']): ?>
+<div style="margin:15px 0;">
+    <button onclick="printSection()" style="margin-right: 10px;">Imprimer</button>
+    <button onclick="exportTableToJPG()">Exporter en JPG</button>
+</div>
+<?php endif; ?>
+
+</div>
+
 
 			<!-- Sélection de la plage de dates -->
 			<div class="date-selection">
@@ -155,10 +159,13 @@ if (!$userData['is_admin']) {
 
             <div class="table-data">
 				<div class="order">
-					<div class="head">
-						<h3>Liste des employés</h3>
-						<input type="text" id="searchInput" placeholder="Rechercher un employé..." onkeyup="filterEmployees()">
-						</div>
+				<div class="head">
+    <h3>Liste des Collaborateurs</h3>
+    <?php if ($userData['is_admin']): ?>
+        <input type="text" id="searchInput" placeholder="Rechercher un Collaborateur..." onkeyup="filterEmployees()">
+    <?php endif; ?>
+</div>
+
 					<table>
 						<thead>
 							<tr>
@@ -168,7 +175,7 @@ if (!$userData['is_admin']) {
 								<th>+ Heures supps semaine 50%	</th>
 								<th>+ Heures dimanche 50%	</th>
 								<th>+ Heures jours fériés 50%</th>
-								<th>+ Différence</th>
+								<th class="col-diff">+ Différence</th>
 								
 							</tr>
 						</thead>
@@ -202,7 +209,100 @@ function filterEmployees() {
     }
 }
 </script>
+<script>
 
+function toFrenchDate(isoDate) {
+    if (!isoDate) return '';
+    const [year, month, day] = isoDate.split('-');
+    return `${day}/${month}/${year}`;
+}
+
+
+
+
+
+function printSection() {
+    const printContents = document.querySelector('.table-data').outerHTML;
+
+    // Récupère les valeurs des dates sélectionnées
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+
+
+	const startFr = toFrenchDate(startDate);
+    const endFr = toFrenchDate(endDate);
+
+	
+    // Construit le bloc affichant la plage horaire (à droite, en haut)
+	const dateRange = `
+    <div class="date-print-range">
+        Période : <strong>${startFr}</strong> au <strong>${endFr}</strong>
+    </div>
+`;
+
+    const printWindow = window.open('', '', 'height=900,width=1200');
+
+    printWindow.document.write('<html><head><title>Décompte d\'heures</title>');
+    printWindow.document.write('<link rel="stylesheet" href="style2.css" type="text/css" />');
+    printWindow.document.write(`
+        <style>
+        @media print {
+            
+ .col-diff, #searchInput { display:none!important; }
+             {
+                overflow: hidden !important;
+            }
+
+            .date-print-range {
+                position: absolute;
+                top: -10px;
+                right: 0;
+                margin: 20px 40px 0 0;
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;
+            }
+        }
+        </style>
+    `);
+    printWindow.document.write('</head><body>');
+    // Ajoute la date avant la table !
+    printWindow.document.write(dateRange);
+    printWindow.document.write(printContents);
+    printWindow.document.write('</body></html>');
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+}
+
+
+// Exporter le tableau en JPG avec html2canvas
+function exportTableToJPG() {
+    const tableDiv = document.querySelector('.table-data');
+    html2canvas(tableDiv).then(function(canvas) {
+        // Crée un lien pour télécharger l'image
+        let link = document.createElement('a');
+        link.href = canvas.toDataURL("image/jpeg");
+        link.download = 'tableau_heures.jpg';
+        link.click();
+    });
+}
+</script>
+<style>
+@media print {
+    .col-diff,
+    #searchInput {
+        display: none !important;
+    }
+	
+}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 </body>
 

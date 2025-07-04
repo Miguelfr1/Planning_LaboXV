@@ -1,9 +1,22 @@
 <?php
+session_start(); // <-- à ajouter !
+
 require_once 'db.php';
 
 if (!isset($_GET['id'])) {
     die('ID utilisateur non spécifié.');
 }
+
+if (!isset($_SESSION['user_id'])) {
+    die('Non connecté.');
+}
+$my_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT is_admin FROM users WHERE id=?");
+$stmt->bind_param('i', $my_id);
+$stmt->execute();
+$res = $stmt->get_result();
+$me = $res->fetch_assoc();
+$is_admin = ($me && $me['is_admin']) ? true : false;
 
 $id = intval($_GET['id']);
 
@@ -36,39 +49,56 @@ $laboratories = ['Vaugirard', 'Grignon', 'Mozart'];
 // Liste fixe des rôles possibles
 $roles = ['Boss', 'Docteur', 'Qualité', 'Préléveur', 'Bactério', 'Immuno', 'Secrétaire', 'Apprenti','Apprenti Bacterio','Apprenti Immuno', 'Apprenti Secretaire', 'Employé', 'Stagiaire'];
 
+$error = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
     $password = !empty($_POST['password']) ? password_hash(trim($_POST['password']), PASSWORD_DEFAULT) : $user['password'];
-    $selectedRoles = $_POST['role'] ?? [];
-    $role = implode(',', array_map('trim', $selectedRoles));
-    $is_admin = isset($_POST['is_admin']) ? 1 : 0;
-    $laboratories = $_POST['laboratories'] ?? [];
 
-    // Mettre à jour les informations de l'utilisateur
-    $updateQuery = "UPDATE users SET name = ?, password = ?, role = ?, is_admin = ? WHERE id = ?";
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->bind_param('sssii', $name, $password, $role, $is_admin, $id);
-
-    if ($stmt->execute()) {
-        // Supprimer les laboratoires existants
-        $deleteQuery = "DELETE FROM user_laboratories WHERE user_id = ?";
-        $stmt = $conn->prepare($deleteQuery);
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-
-        // Ajouter les nouveaux laboratoires sélectionnés
-        if (!empty($laboratories)) {
-            $insertQuery = "INSERT INTO user_laboratories (user_id, laboratory) VALUES (?, ?)";
-            $stmt = $conn->prepare($insertQuery);
-            foreach ($laboratories as $laboratory) {
-                $stmt->bind_param('is', $id, $laboratory);
-                $stmt->execute();
-            }
-        }
-
-        echo "<script> window.location.href = 'employers.php';</script>";
+    if ($is_admin) {
+        $selectedRoles = $_POST['role'] ?? [];
+        $role = implode(',', array_map('trim', $selectedRoles));
+        $is_admin_post = isset($_POST['is_admin']) ? 1 : 0;
+        $laboratories = $_POST['laboratories'] ?? [];
     } else {
-        echo "<script>alert('Erreur lors de la mise à jour de l\'utilisateur.');</script>";
+        $role = $user['role'];
+        $is_admin_post = $user['is_admin'];
+        $laboratories = $selectedLaboratories;
+    }
+
+
+    if (!$error) {
+        // Mettre à jour les informations de l'utilisateur
+        $updateQuery = "UPDATE users SET name = ?, email = ?, password = ?, role = ?, is_admin = ? WHERE id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('ssssii', $name, $email, $password, $role, $is_admin_post, $id);
+        
+        if ($stmt->execute()) {
+            // Supprimer les laboratoires existants
+            $deleteQuery = "DELETE FROM user_laboratories WHERE user_id = ?";
+            $stmt2 = $conn->prepare($deleteQuery);
+            $stmt2->bind_param('i', $id);
+            $stmt2->execute();
+            $stmt2->close();
+
+            // Ajouter les nouveaux laboratoires sélectionnés
+            if (!empty($laboratories)) {
+                $insertQuery = "INSERT INTO user_laboratories (user_id, laboratory) VALUES (?, ?)";
+                $stmt3 = $conn->prepare($insertQuery);
+                foreach ($laboratories as $laboratory) {
+                    $stmt3->bind_param('is', $id, $laboratory);
+                    $stmt3->execute();
+                }
+                $stmt3->close();
+            }
+
+            echo "<script>window.location.href = 'employers.php';</script>";
+            exit();
+        } else {
+            $error = "Erreur lors de la mise à jour de l'utilisateur.";
+        }
+        $stmt->close();
     }
 }
 ?>
@@ -159,47 +189,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .laboratory-buttons button.active {
             background-color: #0056b3;
         }
+
+        .error {
+            color: #c00;
+            margin-bottom: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="form-container">
+<div class="form-container">
         <h1>Modifier l'utilisateur</h1>
+        <?php if (!empty($error)) echo "<div class='error'>" . htmlspecialchars($error) . "</div>"; ?>
         <form method="POST" action="">
             <label for="name">Nom :</label>
             <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>">
 
             <label for="password">Mot de passe (laisser vide pour ne pas changer) :</label>
             <input type="password" id="password" name="password">
 
-            <label for="role">Rôle(s) :</label>
-            <select id="role" name="role[]" multiple required>
-                <?php 
-                $userRoles = explode(',', $user['role']);
-                foreach ($roles as $role): ?>
-                    <option value="<?php echo htmlspecialchars($role); ?>" <?php echo in_array($role, $userRoles) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($role); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <?php if ($is_admin): ?>
+                <label for="role">Rôle(s) :</label>
+                <select id="role" name="role[]" multiple required>
+                    <?php 
+                    $userRoles = explode(',', $user['role']);
+                    foreach ($roles as $role): ?>
+                        <option value="<?php echo htmlspecialchars($role); ?>" <?php echo in_array($role, $userRoles) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($role); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
-            <label for="is_admin">Administrateur :</label>
-            <input type="checkbox" id="is_admin" name="is_admin" value="1" <?php echo $user['is_admin'] ? 'checked' : ''; ?>>
+                <label for="is_admin">Administrateur :</label>
+                <input type="checkbox" id="is_admin" name="is_admin" value="1" <?php echo $user['is_admin'] ? 'checked' : ''; ?>>
 
-            <label>Laboratoires :</label>
-            <div class="laboratory-buttons">
-                <?php foreach (['Vaugirard', 'Grignon', 'Mozart'] as $lab): ?>
-                    <button type="button" value="<?php echo htmlspecialchars($lab); ?>" class="<?php echo in_array($lab, $selectedLaboratories) ? 'active' : ''; ?>" onclick="toggleLaboratory(this)"><?php echo htmlspecialchars($lab); ?></button>
-                <?php endforeach; ?>
-            </div>
-            <div id="laboratories-container">
-                <?php foreach ($selectedLaboratories as $selectedLab): ?>
-                    <input type="hidden" name="laboratories[]" value="<?php echo htmlspecialchars($selectedLab); ?>">
-                <?php endforeach; ?>
-            </div>
+                <label>Laboratoires :</label>
+                <div class="laboratory-buttons">
+                    <?php foreach (['Vaugirard', 'Grignon', 'Mozart'] as $lab): ?>
+                        <button type="button" value="<?php echo htmlspecialchars($lab); ?>" class="<?php echo in_array($lab, $selectedLaboratories) ? 'active' : ''; ?>" onclick="toggleLaboratory(this)"><?php echo htmlspecialchars($lab); ?></button>
+                    <?php endforeach; ?>
+                </div>
+                <div id="laboratories-container">
+                    <?php foreach ($selectedLaboratories as $selectedLab): ?>
+                        <input type="hidden" name="laboratories[]" value="<?php echo htmlspecialchars($selectedLab); ?>">
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
             <button type="submit">Mettre à jour</button>
-        </form>
+        </form> <!-- <-- il manquait la fermeture ici ! -->
     </div>
+
 
     <script>
     function toggleLaboratory(button) {

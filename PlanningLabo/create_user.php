@@ -3,12 +3,21 @@ require_once 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
+    $email = trim($_POST['email']); // <-- Ajout du champ email
     $password = trim($_POST['password']);
-    $roles = $_POST['role'] ?? []; // Attention : c'est maintenant un tableau !
+    $roles = $_POST['role'] ?? [];
     $is_admin = isset($_POST['is_admin']) ? 1 : 0;
     $laboratories = $_POST['laboratories'] ?? [];
 
-    if (!empty($name) && !empty($password) && !empty($roles)) {
+
+        // Vérification unicité de l'email
+        $checkEmail = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $checkEmail->bind_param('s', $email);
+        $checkEmail->execute();
+        $checkEmail->store_result();
+        
+        $checkEmail->close();
+
         // Hacher le mot de passe
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
@@ -16,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $roleString = implode(',', array_map('trim', $roles));
 
         // Insérer l'utilisateur dans la base de données
-        $query = "INSERT INTO users (name, password, role, is_admin) VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO users (name, email, password, role, is_admin) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
 
         if ($stmt) {
-            $stmt->bind_param('sssi', $name, $hashedPassword, $roleString, $is_admin);
+            $stmt->bind_param('ssssi', $name, $email, $hashedPassword, $roleString, $is_admin);
 
             if ($stmt->execute()) {
                 $userId = $stmt->insert_id;
@@ -43,14 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 echo "<script>window.location.href = 'employers.php';</script>";
             } else {
-                echo "<script>alert('Erreur lors de la création de l\'utilisateur : " . $stmt->error . "');</script>";
+                echo "<script>alert('Erreur lors de la création de l\\'utilisateur : " . $stmt->error . "');</script>";
             }
             $stmt->close();
         } else {
             echo "<script>alert('Erreur de préparation de la requête.');</script>";
         }
-    } else {
-        echo "<script>alert('Veuillez remplir tous les champs.');</script>";
-    }
-}
+ }
+
 ?>

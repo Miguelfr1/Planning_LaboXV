@@ -108,7 +108,6 @@
           </a>
       </li>
 
-      <?php if (isset($_SESSION['user_id']) && $isAdmin): ?>  <!-- Seuls les admins voient ces liens -->
       <li>
           <a href="heures.php">
               <i class="bx bxs-doughnut-chart"></i>
@@ -117,11 +116,15 @@
       </li>
 
       <li>
-          <a href="employers.php">
-              <i class="bx bxs-group"></i>
-              <span class="text">Employés</span>
-          </a>
-      </li>
+    <a href="employers.php">
+        <i class="bx bxs-group"></i>
+        <span class="text">
+            <?php echo ($userData['is_admin'] ? 'Collaborateurs' : 'Mon Profil'); ?>
+        </span>
+    </a>
+</li>
+
+      <?php if (isset($_SESSION['user_id'])): ?>  <!-- Seuls les connectés voient le bouton Déconnexion -->
 
       <li>
           <a href="conges.php">
@@ -129,9 +132,8 @@
               <span class="text">Congés</span>
           </a>
       </li>
-      <?php endif; ?>  <!-- Fin de la condition admin -->
+      <?php endif; ?>
 
-      <?php if (isset($_SESSION['user_id'])): ?>  <!-- Seuls les connectés voient le bouton Déconnexion -->
 
       <li>
           <a href="badgeuse.php">
@@ -139,7 +141,7 @@
               <span class="text">Badgeuse</span>
           </a>
       </li>
-      <?php endif; ?>
+      
 
   </ul>
 
@@ -283,7 +285,7 @@
           </div>
 
         </div>
-          <input type="text" id="search-user" class="search-user" placeholder="Rechercher un nom..." oninput="filterRows()" />
+        <input type="text" id="search-user" class="search-user" placeholder="Rechercher un nom..." oninput="filterRows()" value="<?= htmlspecialchars($searchName) ?>" />
 
         <div class="table-data">
           <div class="order">
@@ -306,18 +308,47 @@
                       '2025-11-11', // Armistice
                       '2025-12-25', // Noël
                   ];
-
+                  $previousMonth = date('m', strtotime("$weekStart")); // le mois du lundi
                   foreach ($days as $index => $day) {
                       $currentDay = date('Y-m-d', strtotime("$weekStart +$index days"));
                       $currentDayDate = date('d', strtotime($currentDay));
+                      $currentMonth = date('m', strtotime($currentDay));
                       $isFerie = in_array($currentDay, $jours_feries);
                       $isDimanche = ($day === 'Dimanche');
                       $dayClass = ($isFerie || $isDimanche) ? 'day-special' : '';
                   
-                      echo "<div class='cell day {$dayClass}'>{$day} {$currentDayDate}</div>";
+                      // On regarde si c'est le premier jour d'un nouveau mois
+                      $separatorClass = '';
+                      if ($index > 0 && $currentMonth != $previousMonth) {
+                        $separatorClass = 'month-separator';
+                    }
+                      $previousMonth = $currentMonth;
+                  
+                      echo "<div class='cell day {$dayClass} {$separatorClass}'>{$day} {$currentDayDate}</div>";
                   }
                   
               ?>
+
+              <style>
+
+
+
+.slot.month-separator::after {
+    content: '';
+    position: absolute;
+    top: 0px;         /* Dépasse au-dessus */
+    bottom: -5px;      /* Dépasse en-dessous */
+    left: -4px;
+    width: 4px;
+    background: #111;
+    z-index: 20;
+    pointer-events: none; /* Ne bloque pas les clics */
+}
+
+
+
+
+              </style>
               
             </div>
 
@@ -478,15 +509,17 @@
 
   while ($user = $usersResult->fetch_assoc()) {
       // 🔥 Rôle réel de la semaine (depuis schedules)
-      $rolesQuery = $conn->prepare("
-          SELECT DISTINCT role 
-          FROM schedules 
-          WHERE user_id = ? 
-          AND week_start = ? 
-          AND laboratory = ?
-          LIMIT 1
-      ");
-      $rolesQuery->bind_param("iss", $user['id'], $weekStart, $selectedLab);
+      if ($searchName !== '') {
+        $rolesQuery = $conn->prepare(
+            "SELECT DISTINCT role FROM schedules WHERE user_id = ? AND week_start = ? LIMIT 1"
+        );
+        $rolesQuery->bind_param("is", $user['id'], $weekStart);
+    } else {
+        $rolesQuery = $conn->prepare(
+            "SELECT DISTINCT role FROM schedules WHERE user_id = ? AND week_start = ? AND laboratory = ? LIMIT 1"
+        );
+        $rolesQuery->bind_param("iss", $user['id'], $weekStart, $selectedLab);
+    }
       $rolesQuery->execute();
       $rolesResult = $rolesQuery->get_result();
       $scheduleRoleRow = $rolesResult->fetch_assoc();
@@ -510,12 +543,24 @@ echo "<div class='cell name' style='color: {$nameColor}; font-weight:normal;'>" 
 // Nouvelle colonne total heures
 $totalHoursComma = number_format($totalHours, 2, ',', '');
 echo "<div class='cell total-hours'>" . $totalHoursComma . " h</div>";
-
+$previousMonth = date('m', strtotime("$weekStart")); // le mois du lundi
 foreach ($days as $index => $day) {
   $currentDay = date('Y-m-d', strtotime("$weekStart +$index days"));
+  $currentMonth = date('m', strtotime($currentDay));
+  $separatorClass = '';
+  if ($index > 0 && $currentMonth != $previousMonth) {
+    $separatorClass = 'month-separator';
+}
+$previousMonth = $currentMonth;
+
   $isFerie = in_array($currentDay, $jours_feries);
   $isDimanche = ($day === 'Dimanche');
   $specialClass = ($isDimanche || $isFerie) ? 'jour-special' : '';
+
+
+  
+
+  
   if ($searchName !== '') {
       // ICI : NE PAS FILTRER sur laboratory !!!
       $scheduleQuery = "SELECT start_time, end_time, role, laboratory, break_duration,
@@ -544,52 +589,72 @@ foreach ($days as $index => $day) {
           $scheduleResult = $conn->query($scheduleQuery);
 
           if ($schedule = $scheduleResult->fetch_assoc()) {
-              $start = $schedule['formatted_start'];
-              $end = $schedule['formatted_end'];
-              $pause = $schedule['break_duration'] ?? 0;
-              $workedMinutes = max($schedule['minutes_worked'] - $pause, 0);
-              $hoursWorked = round($workedMinutes / 60, 2);
-              $startHour = intval(explode(':', $start)[0]);
-              $diagonalClass = ($startHour < 12) ? "slot-before-midi" : "slot-apres-midi";
-
-              $slotTimeClass = ($startHour >= 12) ? 'slot-afternoon' : 'slot-morning';
-              
-              $userRoles = explode(',', $user['role'] ?? '');
-              $userRoles = array_filter(array_map('trim', $userRoles));
-              $userRolesJson = json_encode(array_values($userRoles), JSON_UNESCAPED_UNICODE);
-              $breakDurationJS = (int) $pause;
-            
-              // Affichage du slot (pastel)
-              $diagonalClass = ($startHour < 12) ? "slot-before-midi" : "slot-apres-midi";
-echo "<div class='slot {$diagonalClass}' "
-    . ($isAdmin
-        ? "onclick='openModal(\"{$user['id']}\", \"{$day}\", \"{$start}\", \"{$end}\", {$userRolesJson}, {$breakDurationJS})' style=\"--slotColor: {$slotColor}; cursor:pointer;\""
-        : "style=\"--slotColor: {$slotColor}; cursor:not-allowed; opacity:0.85;\" title=\"Seuls les admins peuvent modifier\"")
-    . ">";
-
-              $startHour = intval(explode(':', $start)[0]);
-              if (isset($schedule['laboratory']) && $schedule['laboratory']) {
+            $start = $schedule['formatted_start'];
+            $end = $schedule['formatted_end'];
+            $pause = $schedule['break_duration'] ?? 0;
+            $workedMinutes = max($schedule['minutes_worked'] - $pause, 0);
+            $hoursWorked = round($workedMinutes / 60, 2);
+            $startHour = intval(explode(':', $start)[0]);
+            $userRoles = explode(',', $user['role'] ?? '');
+            $userRoles = array_filter(array_map('trim', $userRoles));
+            $userRolesJson = json_encode(array_values($userRoles), JSON_UNESCAPED_UNICODE);
+            $breakDurationJS = (int) $pause;
+        
+            // Calcul time-bar adaptative
+            $labDayHours = $labs_hours[$selectedLab][$day] ?? null;
+            $hasBar = false;
+            if ($labDayHours && isset($schedule['start_time']) && isset($schedule['end_time'])) {
+                $labOpen = strtotime($currentDay . ' ' . $labDayHours['open']);
+                $labClose = strtotime($currentDay . ' ' . $labDayHours['close']);
+                $slotStart = strtotime($currentDay . ' ' . $schedule['start_time']);
+                $slotEnd = strtotime($currentDay . ' ' . $schedule['end_time']);
+        
+                $totalMinutes = max(1, ($labClose - $labOpen) / 60); // durée d'ouverture du labo
+                $startOffset = max(0, min(($slotStart - $labOpen) / 60, $totalMinutes));
+                $slotLength = max(0, min(($slotEnd - $slotStart) / 60, $totalMinutes - $startOffset));
+                $startPercent = 100 * $startOffset / $totalMinutes;
+                $widthPercent = 100 * $slotLength / $totalMinutes;
+                $hasBar = true;
+            }
+        
+            // Affichage du slot (rectangle)
+            echo "<div class='slot {$specialClass} {$separatorClass}' "
+            . ($isAdmin
+                ? "onclick='openModal(\"{$user['id']}\", \"{$day}\", \"{$start}\", \"{$end}\", {$userRolesJson}, {$breakDurationJS})' style=\"--slotColor: {$slotColor}; cursor:pointer;\""
+                : "style=\"--slotColor: {$slotColor}; cursor:not-allowed; opacity:0.85;\" title=\"Seuls les admins peuvent modifier\"")
+            . ">";
+        
+            // Affichage de la time-bar adaptative
+            if ($hasBar) {
+                echo "<div class='time-bar' style='left:{$startPercent}%;width:{$widthPercent}%;background:{$slotColor};'></div>";
+            }
+        
+            // Infos à l'intérieur du slot
+            if (isset($schedule['laboratory']) && $schedule['laboratory']) {
                 $laboAffiche = ucfirst(strtolower($schedule['laboratory']));
             } else {
+
+
+              
                 $laboAffiche = ucfirst(strtolower($selectedLab));
             }
+            $hoursWorkedComma = number_format($hoursWorked, 2, ',', '');
+            $timePosClass = ($startHour >= 12) ? 'time-top-right' : 'time-top-left';
             echo "<div class='labo-name'>{$laboAffiche}</div>";
-            
-              $timePosClass = ($startHour >= 12) ? 'time-top-right' : 'time-top-left';
-              echo "<div class='time {$timePosClass}'>{$start} - {$end}</div>";
-                                       $hoursWorkedComma = number_format($hoursWorked, 2, ',', ''); // 2 décimales, séparateur virgule
-                         echo "<div class='hours-worked'>{$hoursWorkedComma} h</div>";
-                         
-                                       echo "<div class='employer' style='font-style:normal;'>{$user['name']}</div>";
-              echo "</div>";
-          } else {
-              $userRoles = array_map('trim', explode(',', $user['role']));
-              $userRolesJson = htmlspecialchars(json_encode($userRoles), ENT_QUOTES, 'UTF-8');
-              echo "<div class='slot {$specialClass}' "
-              . ($isAdmin ? "onclick=\"openModal('{$user['id']}', '{$day}', '', '', {$userRolesJson})\" style=\"cursor:pointer;\"" 
-                         : "style=\"cursor:not-allowed;opacity:0.85;\" title=\"Seuls les admins peuvent modifier\"")
-              . "></div>";
-                     }
+            echo "<div class='time {$timePosClass}'>{$start} - {$end}</div>";
+            echo "<div class='hours-worked'>{$hoursWorkedComma} h</div>";
+            echo "<div class='employer' style='font-style:normal;'>{$user['name']}</div>";
+            echo "</div>"; // fin slot
+        
+        } else {
+            $userRoles = array_map('trim', explode(',', $user['role']));
+            $userRolesJson = htmlspecialchars(json_encode($userRoles), ENT_QUOTES, 'UTF-8');
+            echo "<div class='slot {$specialClass} {$separatorClass}' "
+        . ($isAdmin ? "onclick=\"openModal('{$user['id']}', '{$day}', '', '', {$userRolesJson})\" style=\"cursor:pointer;\"" 
+                   : "style=\"cursor:not-allowed;opacity:0.85;\" title=\"Seuls les admins peuvent modifier\"")
+        . "></div>";
+        }
+        
       }
       echo "</div>";
   }
@@ -734,9 +799,8 @@ echo "<div class='slot {$diagonalClass}' "
 
   .time-bar {
     position: absolute;
-    top: 8px;       /* pour que la barre ne touche pas le haut */
-    bottom: 8px;    /* pour qu'elle ne touche pas le bas */
-    border-radius: 8px;
+    top: 0px;       /* pour que la barre ne touche pas le haut */
+    bottom: 0px;    /* pour qu'elle ne touche pas le bas */
     z-index: 1;
     /* Pas besoin de background ici, il sera donné dynamiquement en ligne */
     opacity: 0.88;
@@ -1064,7 +1128,7 @@ echo "<div class='slot {$diagonalClass}' "
           `&confirmed=1`;            // et on ajoute la confirmation 35 h
       let noUrl = `dashboard.php?week_start=${encodeURIComponent(week_start)}&laboratory=${encodeURIComponent(laboratory)}&cancel_over_hours=1`;
       showConfirm(yesUrl, noUrl,
-        "Attention : Cet employé dépassera les 35 heures hebdomadaires avec ce créneau. Voulez-vous continuer ?");
+        "Attention : Cet Collaborateur dépassera les 35 heures hebdomadaires avec ce créneau. Voulez-vous continuer ?");
   }
 
 
@@ -1077,7 +1141,7 @@ echo "<div class='slot {$diagonalClass}' "
 
               let yesUrl = `add_schedule.php?user_id=${user_id}&day_of_week=${day_of_week}&start_time=${start_time}&end_time=${end_time}&week_start=${week_start}&laboratory=${laboratory}&role=${encodeURIComponent(role)}&break_duration=${break_duration}&confirmed_conflict=1`;
               let noUrl = `dashboard.php?week_start=${week_start}&laboratory=${laboratory}`;
-              showConfirm(yesUrl, noUrl, `⚠️ Conflit détecté ! Cet employé est déjà prévu dans le laboratoire "${conflictLab}" de ${conflictStart} à ${conflictEnd} pour ce jour. Voulez-vous continuer ?`);
+              showConfirm(yesUrl, noUrl, `⚠️ Conflit détecté ! Cet Collaborateur est déjà prévu dans le laboratoire "${conflictLab}" de ${conflictStart} à ${conflictEnd} pour ce jour. Voulez-vous continuer ?`);
           }
 
           if (action === "multi_weeks" && !urlParams.has("confirmed_update")) {
@@ -1182,10 +1246,5 @@ echo "<div class='slot {$diagonalClass}' "
 });
 
 </script>
-
-
   </body>
-
-
-
   </html>
