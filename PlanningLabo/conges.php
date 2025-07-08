@@ -258,6 +258,14 @@ function formatDateFr($date) {
                 <label for="end-date-filter">Date de fin :</label>
                 <input type="date" id="end-date-filter">
                 <button onclick="fetchConges()">Afficher</button>
+                <select id="lab-selector" class="lab-selector" onchange="fetchConges()" style="margin-left:10px;">
+                    <option value="vaugirard">VAUGIRARD</option>
+                    <option value="mozart">MOZART</option>
+                    <option value="grignon">GRIGNON</option>
+                </select>
+                <label style="margin-left:10px;">
+                    <input type="checkbox" id="all-labs-toggle" onchange="fetchConges()"> Tous les laboratoires
+                </label>
             </div>
 
             <!-- Tableau des congés validés -->
@@ -452,6 +460,13 @@ function toggleForm(id) {
 #bloc-demandes table td:nth-child(4) { min-width: 110px; }
 #bloc-demandes table th:nth-child(5),
 #bloc-demandes table td:nth-child(5) { min-width: 200px; }
- 
+.select-disabled {
+    background: #f4f4f4 !important;
+    color: #888 !important;
+    border-color: #bbb !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    opacity: 1;
+}
 </style>
 </html>

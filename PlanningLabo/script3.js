@@ -31,6 +31,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     fetchConges();
     fetchEmployees();
+
+
+    const labSelector = document.getElementById('lab-selector');
+    const allLabsToggle = document.getElementById('all-labs-toggle');
+
+    function updateLabSelectState() {
+        if (!labSelector || !allLabsToggle) return;
+        if (allLabsToggle.checked) {
+            labSelector.disabled = true;
+            labSelector.classList.add('select-disabled');
+        } else {
+            labSelector.disabled = false;
+            labSelector.classList.remove('select-disabled');
+        }
+    }
+
+    updateLabSelectState();
+    if (labSelector) labSelector.addEventListener('change', fetchConges);
+    if (allLabsToggle) allLabsToggle.addEventListener('change', () => { updateLabSelectState(); fetchConges(); });
 });
 
 
@@ -43,8 +62,17 @@ function fetchConges() {
         return;
     }
 
-    fetch(`fetch_conges.php?start_date=${startDate}&end_date=${endDate}`)
-        .then(response => response.text())
+    const labSelector = document.getElementById('lab-selector');
+    const allLabsToggle = document.getElementById('all-labs-toggle');
+
+    let url = `fetch_conges.php?start_date=${startDate}&end_date=${endDate}`;
+    if (allLabsToggle && allLabsToggle.checked) {
+        url += `&all_labs=1`;
+    } else if (labSelector) {
+        url += `&laboratory=${labSelector.value}`;
+    }
+
+    fetch(url)          .then(response => response.text())
         .then(data => {
             const tableBody = document.querySelector('.table-data tbody');
             tableBody.innerHTML = data;
