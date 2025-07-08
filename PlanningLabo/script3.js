@@ -1,3 +1,4 @@
+
 function toggleForm() {
 	document.querySelector('.create-user').classList.toggle('open');
 }

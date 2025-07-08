@@ -17,6 +17,9 @@ $userName = $userData['name'] ?? '';
 
 ?>
 
+
+
+
 <?php
 $typeLabels = [
     'conge'           => 'Congé Payé',
@@ -271,17 +274,23 @@ function formatDateFr($date) {
                                 <th>Type d'absence</th>
                                 <th>Jours d'absences</th>
                                 <th>Période</th>
+                                <?php if ($isAdmin): ?>
                                 <th>Modifier</th>
                                 <th>Supprimer</th>
+                            <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
+
+
                         <?php
                         if ($isAdmin) {
                             $congesQuery = "SELECT c.*, u.name FROM conges c JOIN users u ON c.user_id= u.id ORDER BY c.start_date DESC";
                         } else {
                             $congesQuery = "SELECT c.*, u.name FROM conges c JOIN users u ON c.user_id= u.id WHERE c.user_id= '$user_id' ORDER BY c.start_date DESC";
                         }
+
+                        
                         $congesResult = $conn->query($congesQuery);
                         while ($conge = $congesResult->fetch_assoc()) {
                             $start = htmlspecialchars($conge['start_date']);
@@ -292,13 +301,21 @@ function formatDateFr($date) {
                             echo "<td>" . htmlspecialchars($conge['absence_type']) . "</td>";
                             echo "<td>" . $days . "</td>";
                             echo "<td>$start au $end</td>";
-                            if ($isAdmin) {
-                                echo "<td><a href='edit_conge.php?id=" . $conge['id'] . "'>Modifier</a></td>";
-                                echo "<td><a href='delete_conge.php?id=" . $conge['id'] . "'>Supprimer</a></td>";
-                            } else {
-                                echo "<td style='color:#bbb;'>-</td>";
-                                echo "<td style='color:#bbb;'>-</td>";
-                            }
+                            // Affiche "Modifier" et "Supprimer" seulement si ADMIN
+if ($isAdmin) {
+    if ($isAdmin) {
+        echo "<td><a href='edit_conge.php?id=" . $conge['id'] . "'><i class='bx bx-edit'></i></a></td>";
+        echo "<td><a href='delete_conge.php?id=" . $conge['id'] . "'><i class='bx bx-trash'></i></a></td>";
+    } else {
+        echo "<td style='color:#bbb;'>-</td>";
+        echo "<td style='color:#bbb;'>-</td>";
+    }
+    
+} else {
+    echo "<td style='color:#bbb;'>-</td>";
+    echo "<td style='color:#bbb;'>-</td>";
+}
+
                             echo "</tr>";
                         }
                         ?>
@@ -308,47 +325,23 @@ function formatDateFr($date) {
             </div>
         </main>
     </section>
-    <script src="script3.js"></script>
-
     <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var sidebar = document.getElementById('sidebar');
-    var menuBtn = document.querySelector('.bx-menu');
-
-    // À l'ouverture de la page, on lit l'état stocké
-    var sidebarState = localStorage.getItem('sidebarState');
-    if (sidebarState === 'open') {
-        sidebar.classList.remove('hide');
-    } else {
-        sidebar.classList.add('hide');
-    }
-
-    // Quand on clique sur le menu
-    if (menuBtn) {
-        menuBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('hide');
-            // Sauve l'état actuel
-            if (sidebar.classList.contains('hide')) {
-                localStorage.setItem('sidebarState', 'closed');
-            } else {
-                localStorage.setItem('sidebarState', 'open');
-            }
-        });
-    }
-});
 
 </script>
+
+
+
+    <script src="script3.js"></script>
+
 </body>
-<script src="sql.js"></script>
 <script>
-function toggleForm(id) {
-    const el = document.getElementById(id);
-    el.style.display = (el.style.display == "none" || el.style.display == "") ? "block" : "none";
-}
+
+// Sélectionne la table la plus proche de l'input
 function filterEmployees() {
     const input = document.getElementById("searchInput");
     const filter = input.value.toLowerCase();
-    const table = document.querySelector("table tbody");
+    // Va chercher la table juste à côté du input (dans la même .order)
+    const table = input.closest('.order').querySelector("table tbody");
     const rows = table.getElementsByTagName("tr");
     for (let i = 0; i < rows.length; i++) {
         const td = rows[i].getElementsByTagName("td")[0];
@@ -358,6 +351,13 @@ function filterEmployees() {
         }
     }
 }
+
+
+function toggleForm(id) {
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display == "none" || el.style.display == "") ? "block" : "none";
+}
+
 </script>
 
 <style>

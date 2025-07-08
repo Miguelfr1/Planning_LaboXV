@@ -1,3 +1,26 @@
+function formatNameLinebreak(nomComplet) {
+    if (!nomComplet) return "";
+    const parts = nomComplet.trim().split(' ');
+    let prenom = [];
+    let nom = [];
+
+    // On considère tout mot en MAJUSCULE (au moins 2 lettres) comme partie du nom
+    parts.forEach(part => {
+        if (part.length > 1 && part === part.toUpperCase()) {
+            nom.push(part);
+        } else {
+            prenom.push(part);
+        }
+    });
+
+    if (prenom.length > 0 && nom.length > 0) {
+        return `${prenom.join(' ')}<br><b>${nom.join(' ')}</b>`;
+    }
+    return nomComplet;
+}
+
+
+
 function toggleForm() {
 	document.querySelector('.create-user').classList.toggle('open');
 }
@@ -66,7 +89,7 @@ data.sort((a, b) => {
             data.forEach(employee => {
                 const row = `
                     <tr>
-                        <td class="col-nom" style="font-weight:bold;">${employee.nom}</td>
+                        <td class="col-nom" style="font-weight:bold;">${formatNameLinebreak(employee.nom)}</td>
                         <td>${Number(employee.heures).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_supp_25).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
                         <td>${Number(employee.heures_supp_50).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>

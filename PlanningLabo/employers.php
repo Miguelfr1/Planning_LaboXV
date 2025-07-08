@@ -181,16 +181,16 @@ $userData = $userResult->fetch_assoc();
             <label for="role">Rôle :</label>
 			<select id="role" name="role[]" multiple required>
 			<option value="Boss">Boss</option>
-				<option value="Docteur">Docteur</option>
+				<option value="Biologiste">Biologiste</option>
 				<option value="Qualité">Qualité</option>
-				<option value="Préléveur">Préléveur</option>
+				<option value="Préleveur">Préleveur</option>
 				<option value="Bactério">Bactério</option>
 				<option value="Immuno">Immuno</option>
 				<option value="Secrétaire">Secrétaire</option>
 				<option value="Apprenti">Apprenti </option>
 				<option value="Apprenti">Apprenti Bacterio </option>
 				<option value="Apprenti">Apprenti Immuno </option>
-				<option value="Apprenti">Apprenti Secretaire </option>
+				<option value="Apprenti">Apprenti Secrétaire </option>
 
 				<option value="Collaborateur">Collaborateur</option>
 				<option value="Stagiaire">Stagiaire</option>

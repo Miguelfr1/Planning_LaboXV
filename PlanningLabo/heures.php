@@ -83,7 +83,7 @@ $userData = $userResult->fetch_assoc();
           <a href="employers.php">
           
             <i class="bx bxs-group"></i>
-            <span class="text">Collaborateurs</span>
+            <?php echo ($userData['is_admin'] ? 'Collaborateurs' : 'Mon Profil'); ?>
           </a>
           </li>
 
@@ -256,10 +256,10 @@ function printSection() {
 
             .date-print-range {
                 position: absolute;
-                top: -10px;
-                right: 0;
+                top: -13px;
+                right: 150;
                 margin: 20px 40px 0 0;
-                font-size: 16px;
+                font-size: 20px;
                 font-weight: bold;
                 color: #333;
             }

@@ -69,24 +69,40 @@ function closeModal() {
     document.getElementById('modal-overlay').style.display = 'none';
     document.getElementById('modal').style.display = 'none';
 }
-
 function updateFilters() {
     const dateInput = document.getElementById('week-start-selector');
     const labInput = document.getElementById('lab-selector');
     const searchInput = document.getElementById('search-user');
+    const allLabsToggle = document.getElementById('all-labs-toggle');
 
     const selectedDate = new Date(dateInput.value);
     const search = searchInput ? searchInput.value.trim() : '';
+    const allLabs = allLabsToggle && allLabsToggle.checked;
 
-    const selectedLab = labInput.value;
+    // DEBUG
+    console.log('allLabs:', allLabs);
+
+    if (labInput) labInput.disabled = allLabs;
+
     if (!isNaN(selectedDate)) {
         const formattedDate = selectedDate.toISOString().split('T')[0];
-        let url = `?week_start=${formattedDate}&laboratory=${selectedLab}`;
+        let url = `?week_start=${formattedDate}`;
+
+        if (allLabs) {
+            url += `&all_labs=1`;
+        } else {
+            url += `&laboratory=${labInput.value}`;
+        }
+
         if (search !== '') {
             url += `&search=${encodeURIComponent(search)}`;
         }
-        window.location.href = url;    }
+        window.location.href = url;
+    }
 }
+
+
+
 function getNomFamille(nomComplet) {
     const parts = nomComplet.trim().split(' ');
     for (let i = parts.length - 1; i >= 0; i--) {
