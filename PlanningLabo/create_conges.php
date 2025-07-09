@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insérer dans la table des congés avec le type d'absence
     $stmt = $conn->prepare("INSERT INTO conges (user_id, start_date, end_date, days_off, absence_type) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issis", $employee_id, $start_date, $end_date, $days_off, $absence_type);
+    $stmt->bind_param("sssis", $employee_id, $start_date, $end_date, $days_off, $absence_type);
 
     if ($stmt->execute()) {
         header("Location: conges.php?success=1");

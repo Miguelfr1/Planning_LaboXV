@@ -15,6 +15,12 @@ $userData = $userResult->fetch_assoc();
 $isAdmin = $userData['is_admin'] ?? false;
 $userName = $userData['name'] ?? '';
 
+$selectedLab = $_GET['laboratory'] ?? 'vaugirard';
+$allLabs = isset($_GET['all_labs']) && $_GET['all_labs'] === '1';
+$startDateFilter = $_GET['start_date'] ?? date('Y-m-01');
+$endDateFilter   = $_GET['end_date']   ?? date('Y-m-t');
+
+
 ?>
 
 
@@ -252,85 +258,41 @@ function formatDateFr($date) {
 
 
             <!-- Filtre période -->
+             <div class="header">
+
+
             <div class="date-selection">
                 <label for="start-date-filter">Date de début :</label>
-                <input type="date" id="start-date-filter">
+                <input type="date" id="start-date-filter" value="<?= htmlspecialchars($startDateFilter) ?>">
                 <label for="end-date-filter">Date de fin :</label>
-                <input type="date" id="end-date-filter">
-                <button onclick="fetchConges()">Afficher</button>
-                <select id="lab-selector" class="lab-selector" onchange="fetchConges()" style="margin-left:10px;">
-                    <option value="vaugirard">VAUGIRARD</option>
-                    <option value="mozart">MOZART</option>
-                    <option value="grignon">GRIGNON</option>
+                <input type="date" id="end-date-filter" value="<?= htmlspecialchars($endDateFilter) ?>">
+                <button onclick="updateFilters()">Afficher</button>
+                </div>
+
+                <div class="right">
+                <select id="lab-selector" class="lab-selector" onchange="updateFilters()" style="margin-left:10px;">
+                    <option value="vaugirard" <?= $selectedLab == 'vaugirard' ? 'selected' : '' ?>>VAUGIRARD</option>
+                    <option value="mozart" <?= $selectedLab == 'mozart' ? 'selected' : '' ?>>MOZART</option>
+                    <option value="grignon" <?= $selectedLab == 'grignon' ? 'selected' : '' ?>>GRIGNON</option>
                 </select>
                 <label style="margin-left:10px;">
-                    <input type="checkbox" id="all-labs-toggle" onchange="fetchConges()"> Tous les laboratoires
-                </label>
-            </div>
-
-            <!-- Tableau des congés validés -->
-            <div class="table-data">
-                <div class="order">
-                    <div class="head">
-                        <h3>Liste des congés</h3>
-                        <input type="text" id="searchInput" placeholder="Rechercher un Collaborateur..." onkeyup="filterEmployees()">
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Type d'absence</th>
-                                <th>Jours d'absences</th>
-                                <th>Période</th>
-                                <?php if ($isAdmin): ?>
-                                <th>Modifier</th>
-                                <th>Supprimer</th>
-                            <?php endif; ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-
-                        <?php
-                        if ($isAdmin) {
-                            $congesQuery = "SELECT c.*, u.name FROM conges c JOIN users u ON c.user_id= u.id ORDER BY c.start_date DESC";
-                        } else {
-                            $congesQuery = "SELECT c.*, u.name FROM conges c JOIN users u ON c.user_id= u.id WHERE c.user_id= '$user_id' ORDER BY c.start_date DESC";
-                        }
-
-                        
-                        $congesResult = $conn->query($congesQuery);
-                        while ($conge = $congesResult->fetch_assoc()) {
-                            $start = htmlspecialchars($conge['start_date']);
-                            $end = htmlspecialchars($conge['end_date']);
-                            $days = (strtotime($end) - strtotime($start))/86400 + 1;
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($conge['name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($conge['absence_type']) . "</td>";
-                            echo "<td>" . $days . "</td>";
-                            echo "<td>$start au $end</td>";
-                            // Affiche "Modifier" et "Supprimer" seulement si ADMIN
-if ($isAdmin) {
-    if ($isAdmin) {
-        echo "<td><a href='edit_conge.php?id=" . $conge['id'] . "'><i class='bx bx-edit'></i></a></td>";
-        echo "<td><a href='delete_conge.php?id=" . $conge['id'] . "'><i class='bx bx-trash'></i></a></td>";
-    } else {
-        echo "<td style='color:#bbb;'>-</td>";
-        echo "<td style='color:#bbb;'>-</td>";
-    }
-    
-} else {
-    echo "<td style='color:#bbb;'>-</td>";
-    echo "<td style='color:#bbb;'>-</td>";
-}
-
-                            echo "</tr>";
-                        }
-                        ?>
-                        </tbody>
-                    </table>
+                    <input type="checkbox" id="all-labs-toggle" <?= $allLabs ? 'checked' : '' ?> onchange="updateFilters()"> Tous les laboratoires</label>
                 </div>
-            </div>
+                </div>
+
+
+<div class="table-data">
+    <div class="order">
+        <div class="head">
+            <h3>Planning mensuel des congés</h3>
+            <input type="text" id="searchInput" placeholder="Rechercher un Collaborateur..." onkeyup="filterEmployees()">
+        </div>
+        <div id="grille-conges"></div>
+    </div>
+</div>
+
+
+           
         </main>
     </section>
     <script>
@@ -403,6 +365,22 @@ function toggleForm(id) {
     gap: 10px;
 }
 
+
+.table-presence td.absent {
+    background: #e74c3c;
+}
+.table-presence td.present {
+    background: #27ae60;
+}
+.table-presence th, .table-presence td {
+    width: 26px; height: 26px; padding: 0; text-align: center;
+    border: 1px solid #ddd;
+}
+.table-presence th:first-child, .table-presence td:first-child {
+    width: 200px; text-align: left; font-weight: bold; background: #f8f8f8;
+}
+
+
 .demande-actions .btn-accept,
 .demande-actions .btn-refuse {
     min-width: 110px;
@@ -468,5 +446,103 @@ function toggleForm(id) {
     pointer-events: none;
     opacity: 1;
 }
+
+select {
+	padding: 10px;
+	font-size: 16px;
+	border-radius: 8px;
+	border: 2px solid #007BFF;
+	background: var(--white);
+	color: var(--dark);
+
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+
+
+  select:focus {
+	border-color: #0056b3;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+	background: var(--white);
+	
+  }
+
+  .lab-selector{
+	color: var(--dark);
+  }
+
+  option {
+	padding: 10px;
+	background: var(--light);
+	color: var(--dark);
+
+
+  }
+
+
+  .table-presence th.ferie,
+.table-presence td.ferie,
+.table-presence th.sunday,
+.table-presence td.sunday {
+    background: #222 !important;
+    color: #fff !important;
+}
+.table-presence {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+    table-layout: fixed; /* Important pour les carrés */
+}
+
+.table-presence th,
+.table-presence td {
+    border: 2px solid #111 !important;
+    padding: 0 !important;
+    text-align: center;
+    vertical-align: middle;
+    width: 1.0vw;   /* ou 2.5vw selon le nb de jours, adapte si tu veux */
+    height: 1.0vw;  /* identique à width pour carré */
+    min-width: 30px;
+    min-height: 30px;
+    max-width: 50px;
+    max-height: 50px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.table-presence th:first-child,
+.table-presence td:first-child {
+    width: 60px !important;
+    min-width: 130px !important;
+    max-width: 220px !important;
+    text-align: left;
+    background: #fff;
+    font-weight: bold;
+}
+
+.table-presence td.absent { background: #e74c3c !important; }
+.table-presence td.present { background: #27ae60 !important; }
+.table-presence td.ferie, .table-presence td.sunday {
+    background: #222 !important;
+    color: #fff !important;
+}
+
+.table-presence tr td[colspan] {
+    background: #f7f7fa !important;
+    color: #222 !important;
+    font-size: 1.13em;
+    font-weight: bold;
+    text-align: left;
+    border: 2px solid #111 !important;
+}
+
+
+
+.header {
+    display: flex;
+    gap : 500px;
+}
+
 </style>
 </html>
