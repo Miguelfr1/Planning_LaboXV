@@ -44,7 +44,7 @@
     }
 
     // Laboratoires disponibles
-    $laboratories = ['Vaugirard', 'Grignon', 'Mozart'];
+    $laboratories = ['vaugirard', '351_vaugirard', 'mozart', 'grignon'];
 
     // Liste fixe des rôles possibles
     $roles = ['Boss', 'Biologiste', 'Qualité', 'Préleveur', 'Bactério', 'Immuno', 'Secrétaire', 'Apprenti','Apprenti Bacterio','Apprenti Immuno', 'Apprenti Secretaire', 'Employé', 'Stagiaire'];
@@ -84,6 +84,7 @@
 
                 // Ajouter les nouveaux laboratoires sélectionnés
                 if (!empty($laboratories)) {
+                    $laboratories = array_unique($laboratories); // AJOUTE CETTE LIGNE !
                     $insertQuery = "INSERT INTO user_laboratories (user_id, laboratory) VALUES (?, ?)";
                     $stmt3 = $conn->prepare($insertQuery);
                     foreach ($laboratories as $laboratory) {
@@ -92,7 +93,7 @@
                     }
                     $stmt3->close();
                 }
-
+                
                 echo "<script>window.location.href = 'employers.php';</script>";
                 exit();
             } else {
@@ -439,9 +440,17 @@ function updateSelectedRoles() {
 
                     <label>Laboratoires :</label>
                     <div class="laboratory-buttons">
-                        <?php foreach (['Vaugirard', 'Grignon', 'Mozart'] as $lab): ?>
-                            <button type="button" value="<?php echo htmlspecialchars($lab); ?>" class="<?php echo in_array($lab, $selectedLaboratories) ? 'active' : ''; ?>" onclick="toggleLaboratory(this)"><?php echo htmlspecialchars($lab); ?></button>
-                        <?php endforeach; ?>
+                    <?php foreach (['Plateau Technique', '351_vaugirard', 'Mozart', 'Grignon'] as $lab): ?>
+    <button type="button" value="<?php echo htmlspecialchars($lab); ?>" class="<?php echo in_array($lab, $selectedLaboratories) ? 'active' : ''; ?>" onclick="toggleLaboratory(this)">
+        <?php 
+            $labels = ['Plateau Technique' => 'Plateau Technique', '351_vaugirard' => '351, Vaugirard', 'Mozart' => 'Mozart', 'Grignon' => 'Grignon'];
+            echo $labels[$lab];
+        ?>
+    </button>
+<?php endforeach; ?>
+
+
+
                     </div>
                     <div id="laboratories-container">
                         <?php foreach ($selectedLaboratories as $selectedLab): ?>

@@ -15,7 +15,7 @@ $userData = $userResult->fetch_assoc();
 $isAdmin = $userData['is_admin'] ?? false;
 $userName = $userData['name'] ?? '';
 
-$selectedLab = $_GET['laboratory'] ?? 'vaugirard';
+$selectedLab = $_GET['laboratory'] ?? 'Plateau Technique';
 $allLabs = isset($_GET['all_labs']) && $_GET['all_labs'] === '1';
 $startDateFilter = $_GET['start_date'] ?? date('Y-m-01');
 $endDateFilter   = $_GET['end_date']   ?? date('Y-m-t');
@@ -271,13 +271,17 @@ function formatDateFr($date) {
 
                 <div class="right">
                 <select id="lab-selector" class="lab-selector" onchange="updateFilters()" style="margin-left:10px;">
-                    <option value="vaugirard" <?= $selectedLab == 'vaugirard' ? 'selected' : '' ?>>VAUGIRARD</option>
-                    <option value="mozart" <?= $selectedLab == 'mozart' ? 'selected' : '' ?>>MOZART</option>
-                    <option value="grignon" <?= $selectedLab == 'grignon' ? 'selected' : '' ?>>GRIGNON</option>
-                </select>
-                <label style="margin-left:10px;">
-                    <input type="checkbox" id="all-labs-toggle" <?= $allLabs ? 'checked' : '' ?> onchange="updateFilters()"> Tous les laboratoires</label>
-                </div>
+    <option value="Plateau Technique" <?= $selectedLab == 'Plateau Technique' ? 'selected' : '' ?>>PLATEAU TECHNIQUE</option>
+    <option value="351_vaugirard" <?= $selectedLab == '351_vaugirard' ? 'selected' : '' ?>>351, VAUGIRARD</option>
+    <option value="mozart" <?= $selectedLab == 'mozart' ? 'selected' : '' ?>>MOZART</option>
+    <option value="grignon" <?= $selectedLab == 'grignon' ? 'selected' : '' ?>>GRIGNON</option>
+</select>
+
+    <label style="margin-left:10px;">
+        <input type="checkbox" id="all-labs-toggle" <?= $allLabs ? 'checked' : '' ?> onchange="updateFilters()"> Tous les laboratoires
+    </label>
+</div>
+
                 </div>
 
 

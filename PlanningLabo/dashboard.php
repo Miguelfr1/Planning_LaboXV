@@ -14,7 +14,7 @@
     $allLabs = isset($_GET['all_labs']) && $_GET['all_labs'] == '1';
 
     $labs_hours = [
-        'vaugirard' => [
+        'Plateau Technique' => [
         'Lundi'    => ['open' => '07:30', 'close' => '20:00'],
         'Mardi'    => ['open' => '07:30', 'close' => '20:00'],
         'Mercredi' => ['open' => '07:30', 'close' => '20:00'],
@@ -23,6 +23,16 @@
         'Samedi'   => ['open' => '07:30', 'close' => '16:00'],
         'Dimanche' => ['open' => '09:00', 'close' => '14:00'],
         ],
+        '351_vaugirard' => [ // <-- AJOUTER les horaires pour 351 VAUGIRARD
+        // Mets les horaires voulus ici
+        'Lundi'    => ['open' => '07:30', 'close' => '20:00'],
+        'Mardi'    => ['open' => '07:30', 'close' => '20:00'],
+        'Mercredi' => ['open' => '07:30', 'close' => '20:00'],
+        'Jeudi'    => ['open' => '07:30', 'close' => '20:00'],
+        'Vendredi' => ['open' => '07:30', 'close' => '20:00'],
+        'Samedi'   => ['open' => '07:30', 'close' => '16:00'],
+        'Dimanche' => ['open' => '09:00', 'close' => '14:00'],
+    ],
         'mozart' => [
         'Lundi'    => ['open' => '07:30', 'close' => '18:00'],
         'Mardi'    => ['open' => '07:30', 'close' => '18:00'],
@@ -241,7 +251,7 @@
             // Vérifier la date sélectionnée ou utiliser la date actuelle
             $selectedDate = isset($_GET['week_start']) ? $_GET['week_start'] : date('Y-m-d');
             $searchName = isset($_GET['search']) ? trim($_GET['search']) : '';
-            $selectedLab = isset($_GET['laboratory']) ? $_GET['laboratory'] : 'vaugirard';
+            $selectedLab = isset($_GET['laboratory']) ? $_GET['laboratory'] : 'Plateau Technique';
             $allLabs = isset($_GET['all_labs']) && $_GET['all_labs']=='1';
                                 // Calculer le début de la semaine (lundi)
             $weekStart = date('Y-m-d', strtotime('monday this week', strtotime($selectedDate)));
@@ -286,10 +296,12 @@
 
     <div class="right">
     <select id="lab-selector" class="lab-selector" onchange="updateFilters()">
-        <option value="vaugirard" <?= $selectedLab == 'vaugirard' ? 'selected' : '' ?>>VAUGIRARD</option>
-        <option value="mozart" <?= $selectedLab == 'mozart' ? 'selected' : '' ?>>MOZART</option>
-        <option value="grignon" <?= $selectedLab == 'grignon' ? 'selected' : '' ?>>GRIGNON</option>
-    </select>
+    <option value="Plateau Technique" <?= $selectedLab == 'Plateau Technique' ? 'selected' : '' ?>>PLATEAU TECHNIQUE</option>
+    <option value="351_vaugirard" <?= $selectedLab == '351_vaugirard' ? 'selected' : '' ?>>351, VAUGIRARD</option>
+    <option value="mozart" <?= $selectedLab == 'mozart' ? 'selected' : '' ?>>MOZART</option>
+    <option value="grignon" <?= $selectedLab == 'grignon' ? 'selected' : '' ?>>GRIGNON</option>
+</select>
+
     <label style="margin-left:10px;">
         <input type="checkbox" id="all-labs-toggle" <?= isset($_GET['all_labs']) && $_GET['all_labs']=='1' ? 'checked' : '' ?> onchange="updateFilters()" />
         Tous les laboratoires
@@ -824,15 +836,21 @@
                     echo "<div class='time-bar' style='left:{$startPercent}%;width:{$widthPercent}%;background:{$slotColor};'></div>";
                 }
             
-                // Infos à l'intérieur du slot
-                if (isset($schedule['laboratory']) && $schedule['laboratory']) {
-                    $laboAffiche = ucfirst(strtolower($schedule['laboratory']));
-                } else {
+                // Mapping pour labels jolis
+                    $labLabels = [
+                        'Plateau Technique' => 'PLATEAU TECHNIQUE',
+                        '351_vaugirard' => '351, VAUGIRARD',
+                        'mozart' => 'MOZART',
+                        'grignon' => 'GRIGNON'
+                    ];
 
+                    // Affiche le label correct selon le contexte
+                    if (isset($schedule['laboratory']) && $schedule['laboratory']) {
+                        $laboAffiche = $labLabels[$schedule['laboratory']] ?? ucfirst(strtolower($schedule['laboratory']));
+                    } else {
+                        $laboAffiche = $labLabels[$selectedLab] ?? ucfirst(strtolower($selectedLab));
+                    }
 
-                
-                    $laboAffiche = ucfirst(strtolower($selectedLab));
-                }
                 $hoursWorkedComma = number_format($hoursWorked, 2, ',', '');
                 $timePosClass = ($startHour >= 12) ? 'time-top-right' : 'time-top-left';
                 // Nom du labo en badge graphique
@@ -1196,7 +1214,19 @@
     pointer-events: none;
 }
 
-.labo-badge.vaugirard { background: #00BCD4; }  /* Cyan (bleu) */
+.labo-badge.plateau.technique {
+    font-size: 7px !important;
+    padding: 1px 4px !important;
+    min-width: unset !important;
+    max-width: 78px !important;  /* adapte si besoin */
+    line-height: 1.2 !important;
+    white-space: normal !important;
+}
+
+
+.labo-badge.Plateau\ Technique { background: #00BCD4; }  /* Cyan (bleu) */
+.labo-badge.351_vaugirard { background: #00BCD4; }
+
 .labo-badge.mozart    { background: #8e24aa; }  /* Violet foncé */
 .labo-badge.grignon   { background: #43a047; }  /* Vert */
 

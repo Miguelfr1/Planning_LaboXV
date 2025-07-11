@@ -72,12 +72,12 @@ if ($usersRes && $usersRes->num_rows > 0) {
 }
 
 $groupe_roles = [
-    'Biologiste' => 'Biologiste',
-    'Qualité'    => 'Qualité',
-    'Secrétaire' => 'Secrétaire',
-    'Immuno'     => 'Technique',
-    'Bactério'   => 'Technique',
-    'Préleveur'  => 'Technique',
+    'Biologiste' => 'Biologistes',
+    'Qualité'    => 'Administratif - Qualité',
+    'Secrétaire' => 'Secrétaires',
+    'Immuno'     => 'Préleveurs',
+    'Bactério'   => 'Préleveurs',
+    'Préleveur'  => 'Préleveurs',
 ];
 
 function premier_role($rolestr) {
@@ -87,16 +87,17 @@ function premier_role($rolestr) {
 function groupe_affichage($role) {
     global $groupe_roles;
     $role = ucfirst(strtolower($role));
-    if (stripos($role, "apprenti") === 0) return "Apprenti";
+    if (stripos($role, "apprenti") === 0) return "Apprentis";
     if (isset($groupe_roles[$role])) return $groupe_roles[$role];
     return "Autres";
 }
 $ordre_groupes = [
-    "Biologiste",
-    "Qualité",
-    "Secrétaire",
-    "Technique",
-    "Apprenti",
+    "Biologistes",
+    "Préleveurs",
+    "Secrétaires",
+    "Apprentis",
+
+    "Administratif - Qualité", 
     "Autres"
 ];
 // Tri

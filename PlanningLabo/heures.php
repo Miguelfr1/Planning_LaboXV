@@ -137,14 +137,33 @@ $userData = $userResult->fetch_assoc();
 		<main>
 		<div class="head-title">
     <div class="left">
-        <h1>Décompte d'heures</h1>
+        <h1>Décompte heures mensuelles</h1>
         <?php if ($userData['is_admin']): ?>
 <div style="margin:15px 0;">
     <button onclick="printSection()" style="margin-right: 10px;">Imprimer</button>
-    <button onclick="exportTableToJPG()">Exporter en JPG</button>
+    <button onclick="exportTableToJPG()" style="margin-right: 10px;">Exporter en JPG</button>
+    <form id="excelExportForm" method="get" action="test_excel.php" style="display:inline;">
+    <input type="hidden" name="start" id="excel-start">
+    <input type="hidden" name="end" id="excel-end">
+    <button type="submit" >Export Excel</button>
+</form>
+
 </div>
+<script>
+document.getElementById('excelExportForm').addEventListener('submit', function(e){
+    document.getElementById('excel-start').value = document.getElementById('start-date').value;
+    document.getElementById('excel-end').value = document.getElementById('end-date').value;
+});
+</script>
 <?php endif; ?>
 
+<script>
+    document.getElementById('excelExportForm').addEventListener('submit', function(e){
+    document.getElementById('excel-start').value = document.getElementById('start-date').value;
+    document.getElementById('excel-end').value = document.getElementById('end-date').value;
+});
+
+</script>
 </div>
 
 

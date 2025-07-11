@@ -198,11 +198,14 @@ $userData = $userResult->fetch_assoc();
             </select>
 
             <label>Laboratoires :</label>
-            <div class="laboratory-buttons">
-                <button type="button" value="Vaugirard" onclick="toggleLaboratory(this)">Vaugirard</button>
-                <button type="button" value="Grignon" onclick="toggleLaboratory(this)">Grignon</button>
-                <button type="button" value="Mozart" onclick="toggleLaboratory(this)">Mozart</button>
-            </div>
+			<div class="laboratory-buttons">
+    <button type="button" value="Plateau Technique" onclick="toggleLaboratory(this)">Plateau Technique</button>
+    <button type="button" value="351_vaugirard" onclick="toggleLaboratory(this)">351, Vaugirard</button>
+    <button type="button" value="mozart" onclick="toggleLaboratory(this)">Mozart</button>
+    <button type="button" value="grignon" onclick="toggleLaboratory(this)">Grignon</button>
+</div>
+
+
             <div id="laboratories-container"></div>
 
 			<label for="is_admin">Admin :</label>
@@ -266,7 +269,18 @@ $userData = $userResult->fetch_assoc();
 									echo "<tr>";
 echo "<td>" . htmlspecialchars($row['name']) . "</td>";
 echo "<td>" . htmlspecialchars(str_replace(',', ', ', $row['role'])) . "</td>";
-echo "<td>" . htmlspecialchars($row['laboratories'] ?? 'Aucun') . "</td>";
+$labLabels = [
+    'Plateau Technique' => 'Plateau Technique',
+    '351_vaugirard' => '351, Vaugirard',
+    'Mozart' => 'Mozart',
+    'Grignon' => 'Grignon'
+];
+
+$rawLabs = explode(', ', $row['laboratories'] ?? '');
+$labsDisplay = array_map(function($lab) use ($labLabels) {
+    return $labLabels[$lab] ?? $lab;
+}, $rawLabs);
+echo "<td>" . htmlspecialchars(implode(', ', $labsDisplay) ?: 'Aucun') . "</td>";
 echo "<td><a href='edit_user.php?id=" . $row['id'] . "'><i class='bx bxs-edit'></i></a></td>";
 if ($userData['is_admin']) {
     echo "<td><a href='delete_user.php?id=" . $row['id'] . "'><i class='bx bx-message-square-x bx-rotate-270'></i></a></td>";
