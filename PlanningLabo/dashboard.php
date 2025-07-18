@@ -14,7 +14,7 @@
     $allLabs = isset($_GET['all_labs']) && $_GET['all_labs'] == '1';
 
     $labs_hours = [
-        'Plateau Technique' => [
+        'plateau technique' => [
         'Lundi'    => ['open' => '07:30', 'close' => '20:00'],
         'Mardi'    => ['open' => '07:30', 'close' => '20:00'],
         'Mercredi' => ['open' => '07:30', 'close' => '20:00'],
@@ -114,6 +114,18 @@
 
     <body>
 
+    <?php if (isset($_GET['error']) && !empty($_GET['error'])): ?>
+    <div class="alert alert-danger" id="error-alert" style="color:#a00; background:#fee; padding:16px; border:2px solid #a00; font-size:18px; font-weight:bold; text-align:center; margin-bottom:24px; z-index:10000;">
+        <?= htmlspecialchars($_GET['error']) ?>
+    </div>
+    <script>
+        setTimeout(function() {
+            var alert = document.getElementById('error-alert');
+            if(alert) alert.style.display = 'none';
+        }, 3000);
+    </script>
+<?php endif; ?>
+
 
 
         <!-- SIDEBAR -->
@@ -200,6 +212,7 @@
         </nav>
         
         <main>
+        <div class="sticky-header">
 
 
             <div class="head-title">
@@ -221,7 +234,7 @@
             'Secrétaire' => '#b3d1fc',           // bleu (même que l'ancien Apprenti Secrétaire)
             'Apprenti Immuno' => '#FFA500',      // orange
             'Apprenti Bacterio' => '#FFF59D',    // jaune pastel
-            'Apprenti Secrétaire' => '#b3e6ff',  // bleu clair
+            'Apprenti Secretaire' => '#b3e6ff',  // bleu clair
             'Stagiaire' => '#dddddd'
         ];
         
@@ -237,7 +250,7 @@
             'Secrétaire' => '#00aaff',           // bleu
             'Apprenti Immuno' => 'orange',       // orange bien visible
             'Apprenti Bacterio' => '#FFD600',    // jaune flashy
-            'Apprenti Secrétaire' => '#4fc3f7',  // bleu plus clair (bleu "sky", visible)
+            'Apprenti Secretaire' => '#4fc3f7',  // bleu plus clair (bleu "sky", visible)
             'Stagiaire' => 'black'
         ];
         
@@ -266,12 +279,50 @@
     }
     $commentQuery->close();
             ?>
+<div class="week-selector" style="display: flex; align-items: center; gap: 10px;">
+    <p style="margin:0;">Semaine du :</p>
+    <button type="button" id="prev-week-btn" style=" padding: 4px 10px;">&#8592;</button>
+    <input type="date" id="week-start-selector" value="<?= $selectedDate ?>" onchange="updateFilters()" style="min-width:120px;"/>
+    <button type="button" id="next-week-btn" style= "padding: 4px 10px;">&#8594;</button>
+    <button id="export-jpg-btn" style="margin-left: 10px;">Exporter en JPG</button>
+</div>
 
-    <div class="week-selector">
-        <p>Semaine du : </p>
-        <input type="date" id="week-start-selector" value="<?= $selectedDate ?>" onchange="updateFilters()" />
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("week-start-selector");
+    const prev = document.getElementById("prev-week-btn");
+    const next = document.getElementById("next-week-btn");
 
-        <button id="export-jpg-btn">Exporter en JPG</button>
+    function getMonday(dateStr) {
+        const d = new Date(dateStr);
+        // force au lundi (0=dimanche, 1=lundi)
+        const day = d.getDay();
+        const diff = d.getDate() - ((day + 6) % 7); // lundi = 1
+        d.setDate(diff);
+        return d;
+    }
+
+    function setNewDate(days) {
+        let d = getMonday(input.value || (new Date()).toISOString().slice(0,10));
+        d.setDate(d.getDate() + days);
+        // format AAAA-MM-JJ
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const iso = `${yyyy}-${mm}-${dd}`;
+        input.value = iso;
+        updateFilters();
+    }
+
+    prev.addEventListener("click", function() {
+        setNewDate(-7);
+    });
+    next.addEventListener("click", function() {
+        setNewDate(7);
+    });
+});
+</script>
+     
     <script>
     document.addEventListener("DOMContentLoaded", function () {
         const exportBtn = document.getElementById("export-jpg-btn");
@@ -291,9 +342,6 @@
 
     
     </script>
-    </div>
-            
-
     <div class="right">
     <select id="lab-selector" class="lab-selector" onchange="updateFilters()">
     <option value="Plateau Technique" <?= $selectedLab == 'Plateau Technique' ? 'selected' : '' ?>>PLATEAU TECHNIQUE</option>
@@ -314,6 +362,9 @@
     <input type="text" id="search-user" class="search-user" placeholder="Rechercher un nom..." oninput="filterRows(); toggleClearBtn();" value="<?= htmlspecialchars($searchName) ?>" />
     <button type="button" id="clear-search-btn" class="clear-search-btn" onclick="clearSearch()" style="display:none;" tabindex="-1">&times;</button>
 </div>
+
+</div>
+
 
             <div class="table-data">
             <div class="order">
@@ -363,27 +414,7 @@
                     
                 ?>
 
-                <style>
-
-
-
-    .slot.month-separator::after {
-        content: '';
-        position: absolute;
-        top: 0px;         /* Dépasse au-dessus */
-        bottom: -5px;      /* Dépasse en-dessous */
-        left: -4px;
-        width: 4px;
-        background: #111;
-        z-index: 20;
-        pointer-events: none; /* Ne bloque pas les clics */
-    }
-
-
-
-
-                </style>
-                
+      
                 </div>
 
                 <?php
@@ -430,7 +461,7 @@
                         'Préleveur',
                         'Qualité',
                         'Secrétaire',
-                        'Apprenti Secrétaire',
+                        'Apprenti Secretaire',
                         'Apprenti Bacterio',
                         'Apprenti Immuno',
                         'Apprenti',
@@ -455,7 +486,7 @@
                         'Préleveur',
                         'Qualité',
                         'Secrétaire',
-                        'Apprenti Secrétaire',
+                        'Apprenti Secretaire',
                         'Apprenti Bacterio',
                         'Apprenti Immuno',
                         'Apprenti',
@@ -594,7 +625,7 @@
                         'Préleveur',
                         'Qualité',
                         'Secrétaire',
-                        'Apprenti Secrétaire',
+                        'Apprenti Secretaire',
                         'Apprenti Bacterio',
                         'Apprenti Immuno',
                         'Apprenti',
@@ -619,7 +650,7 @@
                         'Préleveur',
                         'Qualité',
                         'Secrétaire',
-                        'Apprenti Secrétaire',
+                        'Apprenti Secretaire',
                         'Apprenti Bacterio',
                         'Apprenti Immuno',
                         'Apprenti',
@@ -807,8 +838,11 @@
             
                 // Calcul time-bar adaptative
 // Utilise le vrai laboratoire du créneau (sinon fallback sur le selectedLab)
-                $currentLab = isset($schedule['laboratory']) && $schedule['laboratory'] ? strtolower($schedule['laboratory']) : $selectedLab;
-                $labDayHours = $labs_hours[$currentLab][$realDayForHours] ?? null;
+$labFromDb = isset($schedule['laboratory']) && $schedule['laboratory'] ? $schedule['laboratory'] : $selectedLab;
+$currentLab = strtolower($labFromDb); // tout en minuscule
+$labDayHours = $labs_hours[$currentLab][$realDayForHours] ?? null;
+
+
                 $hasBar = false;
                 if ($labDayHours && isset($schedule['start_time']) && isset($schedule['end_time'])) {
                     $labOpen = strtotime($currentDay . ' ' . $labDayHours['open']);
@@ -837,25 +871,42 @@
                 }
             
                 // Mapping pour labels jolis
-                    $labLabels = [
-                        'Plateau Technique' => 'PLATEAU TECHNIQUE',
-                        '351_vaugirard' => '351, VAUGIRARD',
-                        'mozart' => 'MOZART',
-                        'grignon' => 'GRIGNON'
-                    ];
-
-                    // Affiche le label correct selon le contexte
-                    if (isset($schedule['laboratory']) && $schedule['laboratory']) {
-                        $laboAffiche = $labLabels[$schedule['laboratory']] ?? ucfirst(strtolower($schedule['laboratory']));
-                    } else {
-                        $laboAffiche = $labLabels[$selectedLab] ?? ucfirst(strtolower($selectedLab));
-                    }
-
+                $labLabels = [
+                    'plateau technique' => 'PLATEAU TECHNIQUE',
+                    '351_vaugirard' => '351, VAUGIRARD',
+                    'mozart' => 'MOZART',
+                    'grignon' => 'GRIGNON'
+                ];
+                
+                if (isset($schedule['laboratory']) && $schedule['laboratory']) {
+                    $labKey = strtolower($schedule['laboratory']);
+                    $laboAffiche = $labLabels[$labKey] ?? strtoupper($labKey);
+                } else {
+                    $labKey = strtolower($selectedLab);
+                    $laboAffiche = $labLabels[$labKey] ?? strtoupper($labKey);
+                }
+                
                 $hoursWorkedComma = number_format($hoursWorked, 2, ',', '');
                 $timePosClass = ($startHour >= 12) ? 'time-top-right' : 'time-top-left';
                 // Nom du labo en badge graphique
-                $laboClass = strtolower($laboAffiche); // vaugirard, mozart, grignon
-                echo "<div class='labo-badge $laboClass'>{$laboAffiche}</div>";
+                $laboClass = '';
+                switch (strtolower($laboAffiche)) {
+                    case '351, vaugirard':
+                    case '351_vaugirard':
+                        $laboClass = 'vaugirard';
+                        break;
+                    case 'mozart':
+                        $laboClass = 'mozart';
+                        break;
+                    case 'grignon':
+                        $laboClass = 'grignon';
+                        break;
+                    case 'plateau technique':
+                        $laboClass = 'plateau technique';
+                        break;
+                    default:
+                        $laboClass = strtolower(preg_replace('/[^a-z0-9]+/', '-', $laboAffiche));
+                }                echo "<div class='labo-badge $laboClass'>{$laboAffiche}</div>";
                 echo "<div class='time {$timePosClass}'>{$start} - {$end}</div>";
                 echo "<div class='hours-worked'>{$hoursWorkedComma} h</div>";
                 echo "<div class='employer' style='font-style:normal;'>{$user['name']}</div>";
@@ -1023,6 +1074,27 @@
     .slot > *:not(.time-bar) {
         z-index: 2;
     }
+
+    <style>
+
+
+
+.slot.month-separator::after {
+    content: '';
+    position: absolute;
+    top: 0px;         /* Dépasse au-dessus */
+    bottom: -5px;      /* Dépasse en-dessous */
+    left: -4px;
+    width: 4px;
+    background: #111;
+    z-index: 20;
+    pointer-events: none; /* Ne bloque pas les clics */
+}
+
+
+
+
+            
 
     .slot {
     position: relative;
@@ -1205,7 +1277,6 @@
     font-size: 10px;
     font-weight: bold;
     color: white;
-    background: #00BCD4; /* par défaut cyan */
     box-shadow: 0 1px 3px #0001;
     letter-spacing: 0.5px;
     margin-bottom: 0;
@@ -1221,11 +1292,16 @@
     max-width: 78px !important;  /* adapte si besoin */
     line-height: 1.2 !important;
     white-space: normal !important;
+    background : #808080;
 }
 
-
-.labo-badge.Plateau\ Technique { background: #00BCD4; }  /* Cyan (bleu) */
-.labo-badge.351_vaugirard { background: #00BCD4; }
+.labo-badge.vaugirard    { 
+      font-size: 9px !important;
+    padding: 1px 4px !important;
+    min-width: unset !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    background : #00cbcc; }  /* Violet foncé */
 
 .labo-badge.mozart    { background: #8e24aa; }  /* Violet foncé */
 .labo-badge.grignon   { background: #43a047; }  /* Vert */
@@ -1328,6 +1404,19 @@
         }
 
         
+        .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 36px ;    padding-bottom: 10px;
+    background : #eee;
+    /* Optionnel : border-bottom pour bien séparer quand c'est sticky */
+}
+
+
+
+
+
 
     </style>
 

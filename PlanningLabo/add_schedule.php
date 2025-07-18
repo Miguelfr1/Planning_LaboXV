@@ -82,11 +82,41 @@ if ($applyToFullWeek && isset($_GET['confirmed_multi_weeks']) && $_GET['confirme
             $checkFutureStmt->execute();
             $resultFuture = $checkFutureStmt->get_result();
             if ($resultFuture->num_rows == 0) {
-                $insertStmt = $conn->prepare("INSERT INTO schedules (user_id, day_of_week, start_time, end_time, week_start, laboratory, role, break_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $insertStmt->bind_param("issssssi", $user_id, $jour, $start_time, $end_time, $future_week_start, $laboratory, $role, $break_duration);
-                $insertStmt->execute();
-                $insertStmt->close();
+                // 1. Vérifier chevauchement sur AUTRE laboratoire
+                $conflictStmt = $conn->prepare("
+                    SELECT laboratory, start_time, end_time
+                    FROM schedules
+                    WHERE user_id = ?
+                      AND day_of_week = ?
+                      AND week_start = ?
+                      AND laboratory != ?
+                ");
+                $conflictStmt->bind_param("isss", $user_id, $jour, $future_week_start, $laboratory);
+                $conflictStmt->execute();
+                $conflictResult = $conflictStmt->get_result();
+                $hasConflict = false;
+                while ($conflict = $conflictResult->fetch_assoc()) {
+                    $start_a = strtotime($start_time);
+                    $end_a = strtotime($end_time);
+                    $start_b = strtotime($conflict['start_time']);
+                    $end_b = strtotime($conflict['end_time']);
+                    if ($start_a < $end_b && $end_a > $start_b) {
+                        $hasConflict = true;
+                        break;
+                    }
+                }
+                $conflictStmt->close();
+            
+                // 2. Si pas de conflit, on INSÈRE
+                if (!$hasConflict) {
+                    $insertStmt = $conn->prepare("INSERT INTO schedules (user_id, day_of_week, start_time, end_time, week_start, laboratory, role, break_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $insertStmt->bind_param("issssssi", $user_id, $jour, $start_time, $end_time, $future_week_start, $laboratory, $role, $break_duration);
+                    $insertStmt->execute();
+                    $insertStmt->close();
+                }
+                // Sinon, on saute cette semaine (ne rien faire)
             }
+            
             $checkFutureStmt->close();
         }
     }
@@ -175,6 +205,7 @@ if ($action === 'update_schedule') {
 }
 
 // Vérification conflit laboratoire
+// Vérification conflit laboratoire avec test de chevauchement horaire
 $conflictStmt = $conn->prepare(
     "SELECT laboratory, start_time, end_time
        FROM schedules 
@@ -186,35 +217,77 @@ $conflictStmt = $conn->prepare(
 $conflictStmt->bind_param("isss", $user_id, $day_of_week, $week_start, $laboratory);
 $conflictStmt->execute();
 $conflictResult = $conflictStmt->get_result();
+
+$chevauchement = false;
+$conflict_info = null;
+
+while ($conflict = $conflictResult->fetch_assoc()) {
+    $start_a = strtotime($start_time);
+    $end_a   = strtotime($end_time);
+    $start_b = strtotime($conflict['start_time']);
+    $end_b   = strtotime($conflict['end_time']);
+    if ($start_a < $end_b && $end_a > $start_b) {
+        $chevauchement = true;
+        $conflict_info = $conflict;
+        break;
+    }
+}
 $conflictStmt->close();
 
-if ($conflictResult->num_rows > 0
-    && !isset($_GET['confirmed_conflict'])
-    && !isset($_GET['confirmed'])
-    && !isset($_GET['confirmed_multi_weeks'])
-    && !isset($_GET['confirmed_single_week'])
-){
-    $conflict = $conflictResult->fetch_assoc();
-    $conflictLab   = $conflict['laboratory'];
-    $conflictStart = $conflict['start_time'];
-    $conflictEnd   = $conflict['end_time'];
-    header(
-      "Location: dashboard.php?"
-     . "confirm=conflict_lab"
-     . "&user_id={$user_id}"
-     . "&day_of_week={$day_of_week}"
-     . "&start_time={$start_time}"
-     . "&end_time={$end_time}"
-     . "&week_start={$week_start}"
-     . "&laboratory={$laboratory}"
-     . "&conflict_lab="   . urlencode($conflictLab)
-     . "&conflict_start=" . urlencode($conflictStart)
-     . "&conflict_end="   . urlencode($conflictEnd)
-     . "&role="           . urlencode($role)
-     . "&break_duration=" . urlencode($break_duration)
-    );
+if ($chevauchement) {
+    // Blocage direct : pas de confirmation possible
+    $conflictLab   = $conflict_info['laboratory'];
+    $conflictStart = $conflict_info['start_time'];
+    $conflictEnd   = $conflict_info['end_time'];
+    header("Location: dashboard.php?week_start=" . urlencode($week_start)
+        . "&laboratory=" . urlencode($laboratory)
+        . "&role=" . urlencode($role)
+        . "&error=" . urlencode("Impossible d'ajouter ce créneau : chevauchement horaire avec le laboratoire $conflictLab de $conflictStart à $conflictEnd."));
     exit();
+} elseif ($conflictResult->num_rows > 0
+&& !isset($_GET['confirmed_conflict'])
+&& !isset($_GET['confirmed'])
+&& !isset($_GET['confirmed_multi_weeks'])
+&& !isset($_GET['confirmed_single_week'])
+) {
+// On refait la requête pour avoir un créneau
+$conflictStmt2 = $conn->prepare(
+    "SELECT laboratory, start_time, end_time
+       FROM schedules 
+      WHERE user_id = ?
+        AND day_of_week = ?
+        AND week_start = ?
+        AND laboratory != ?
+      LIMIT 1"
+);
+$conflictStmt2->bind_param("isss", $user_id, $day_of_week, $week_start, $laboratory);
+$conflictStmt2->execute();
+$conflictResult2 = $conflictStmt2->get_result();
+$conflict = $conflictResult2->fetch_assoc();
+$conflictStmt2->close();
+
+$conflictLab   = $conflict['laboratory'];
+$conflictStart = $conflict['start_time'];
+$conflictEnd   = $conflict['end_time'];
+header(
+  "Location: dashboard.php?"
+ . "confirm=conflict_lab"
+ . "&user_id={$user_id}"
+ . "&day_of_week={$day_of_week}"
+ . "&start_time={$start_time}"
+ . "&end_time={$end_time}"
+ . "&week_start={$week_start}"
+ . "&laboratory={$laboratory}"
+ . "&conflict_lab="   . urlencode($conflictLab)
+ . "&conflict_start=" . urlencode($conflictStart)
+ . "&conflict_end="   . urlencode($conflictEnd)
+ . "&role="           . urlencode($role)
+ . "&break_duration=" . urlencode($break_duration)
+);
+exit();
 }
+
+
 
 // Vérification dépassement 35h
 $totalHoursStmt = $conn->prepare("SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) / 60 AS total_hours FROM schedules WHERE user_id = ? AND week_start = ?");
@@ -265,9 +338,9 @@ if (
 }
 
 // Propagation sur 52 semaines d’UN jour (hors full week)
+// Propagation sur 52 semaines d’UN jour (hors full week)
 if (isset($_GET['confirmed_multi_weeks']) && $_GET['confirmed_multi_weeks'] == 1 && !$applyToFullWeek) {
     $weeksToAdd = 52; 
-    $insertStmt = $conn->prepare("INSERT INTO schedules (user_id, day_of_week, start_time, end_time, week_start, laboratory, role, break_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     for ($i = 0; $i < $weeksToAdd; $i++) {
         $future_week_start    = date('Y-m-d', strtotime("+$i weeks", strtotime($week_start)));
         $future_schedule_date = date('Y-m-d', strtotime($future_week_start . " + " . $jours_semaine[$day_of_week] . " days"));
@@ -288,16 +361,46 @@ if (isset($_GET['confirmed_multi_weeks']) && $_GET['confirmed_multi_weeks'] == 1
         $checkFutureStmt->execute();
         $resultFuture = $checkFutureStmt->get_result();
         if ($resultFuture->num_rows == 0) {
-            $insertStmt->bind_param("issssssi", $user_id, $day_of_week, $start_time, $end_time, $future_week_start, $laboratory, $role, $break_duration);
-            $insertStmt->execute();
+            // 🔥 Ajout test conflit multi-labo
+            $conflictStmt = $conn->prepare("
+                SELECT laboratory, start_time, end_time
+                FROM schedules
+                WHERE user_id = ?
+                  AND day_of_week = ?
+                  AND week_start = ?
+                  AND laboratory != ?
+            ");
+            $conflictStmt->bind_param("isss", $user_id, $day_of_week, $future_week_start, $laboratory);
+            $conflictStmt->execute();
+            $conflictResult = $conflictStmt->get_result();
+            $hasConflict = false;
+            while ($conflict = $conflictResult->fetch_assoc()) {
+                $start_a = strtotime($start_time);
+                $end_a = strtotime($end_time);
+                $start_b = strtotime($conflict['start_time']);
+                $end_b = strtotime($conflict['end_time']);
+                if ($start_a < $end_b && $end_a > $start_b) {
+                    $hasConflict = true;
+                    break;
+                }
+            }
+            $conflictStmt->close();
+
+            if (!$hasConflict) {
+                $insertStmt = $conn->prepare("INSERT INTO schedules (user_id, day_of_week, start_time, end_time, week_start, laboratory, role, break_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $insertStmt->bind_param("issssssi", $user_id, $day_of_week, $start_time, $end_time, $future_week_start, $laboratory, $role, $break_duration);
+                $insertStmt->execute();
+                $insertStmt->close();
+            }
+            // sinon skip semaine
         }
         $checkFutureStmt->close();
     }
-    $insertStmt->close();
 
     header("Location: dashboard.php?week_start=" . urlencode($week_start) . "&laboratory=" . urlencode($laboratory) . "&alert=" . urlencode("Créneau appliqué à toutes les semaines !"));
     exit();
 }
+
 
 // Ajout simple pour un seul jour
 $insertStmt = $conn->prepare("INSERT INTO schedules (user_id, day_of_week, start_time, end_time, week_start, laboratory, role, break_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");

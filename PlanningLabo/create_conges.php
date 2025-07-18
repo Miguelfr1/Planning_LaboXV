@@ -41,7 +41,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("sssis", $employee_id, $start_date, $end_date, $days_off, $absence_type);
 
     if ($stmt->execute()) {
+
+        // SUPPRESSION DES CRENEAUX DU PLANNING SUR LA PERIODE DU CONGE
+        $jours_semaine = [
+            'Monday' => 'Lundi',
+            'Tuesday' => 'Mardi',
+            'Wednesday' => 'Mercredi',
+            'Thursday' => 'Jeudi',
+            'Friday' => 'Vendredi',
+            'Saturday' => 'Samedi',
+            'Sunday' => 'Dimanche',
+        ];
+        $date = new DateTime($start_date);
+        $endDateObj = new DateTime($end_date);
+        while ($date <= $endDateObj) {
+            $day_of_week = $date->format("N");
+            $current_date = $date->format("Y-m-d");
+            if ($day_of_week != 7 && !in_array($current_date, $jours_feries)) {
+                $week_start = clone $date;
+                $week_start->modify('monday this week');
+                $week_start_str = $week_start->format('Y-m-d');
+                $day_name = $jours_semaine[$date->format('l')];
+                $deleteQuery = $conn->prepare("
+                    DELETE FROM schedules
+                    WHERE user_id = ?
+                      AND week_start = ?
+                      AND day_of_week = ?
+                ");
+                $deleteQuery->bind_param("iss", $employee_id, $week_start_str, $day_name);
+                $deleteQuery->execute();
+                $deleteQuery->close();
+            }
+            $date->modify("+1 day");
+        }
+
         header("Location: conges.php?success=1");
+        exit;
     } else {
         echo "Erreur lors de l'enregistrement.";
     }

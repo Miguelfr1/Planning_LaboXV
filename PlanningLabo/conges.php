@@ -261,13 +261,14 @@ function formatDateFr($date) {
              <div class="header">
 
 
-            <div class="date-selection">
-                <label for="start-date-filter">Date de début :</label>
-                <input type="date" id="start-date-filter" value="<?= htmlspecialchars($startDateFilter) ?>">
-                <label for="end-date-filter">Date de fin :</label>
-                <input type="date" id="end-date-filter" value="<?= htmlspecialchars($endDateFilter) ?>">
-                <button onclick="updateFilters()">Afficher</button>
-                </div>
+             <div class="date-selection">
+    <button id="prevMonth" type="button" onclick="changeMonth(-1)" style=" padding: 4px 10px;">&#8592;</button>
+    <span id="mois-courant" style="font-size:1.13em;font-weight:500;padding:0 8px;"></span>
+    <input type="hidden" id="start-date-filter" value="<?= htmlspecialchars($startDateFilter) ?>">
+<input type="hidden" id="end-date-filter" value="<?= htmlspecialchars($endDateFilter) ?>">
+
+    <button id="nextMonth" type="button" onclick="changeMonth(1)"style=" padding: 4px 10px;">&#8594;</button>
+</div>
 
                 <div class="right">
                 <select id="lab-selector" class="lab-selector" onchange="updateFilters()" style="margin-left:10px;">
@@ -300,6 +301,45 @@ function formatDateFr($date) {
         </main>
     </section>
     <script>
+
+function pad2(n) { return n < 10 ? '0'+n : n; }
+
+const moisNoms = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+];
+
+// Initialisation : récupère le mois/année du filtre PHP ou aujourd'hui
+let moisCourant = (function() {
+    let d = "<?= htmlspecialchars($startDateFilter) ?>";
+    let date = (d && !isNaN(Date.parse(d))) ? new Date(d) : new Date();
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+})();
+
+function pad2(n) { return n < 10 ? '0'+n : n; }
+
+function updateAffichageMois() {
+    const mois = moisNoms[moisCourant.getMonth()];
+    const annee = moisCourant.getFullYear();
+    document.getElementById('mois-courant').textContent = mois + " " + annee;
+    // Mets à jour les filtres cachés (start/end)
+    const y = moisCourant.getFullYear(), m = moisCourant.getMonth();
+    const start = y + '-' + pad2(m+1) + '-01';
+    const end   = y + '-' + pad2(m+1) + '-' + pad2(new Date(y, m+1, 0).getDate());
+    document.getElementById('start-date-filter').value = start;
+    document.getElementById('end-date-filter').value = end;
+}
+
+function changeMonth(delta) {
+    moisCourant.setMonth(moisCourant.getMonth() + delta);
+    updateAffichageMois();
+    if (typeof updateFilters === 'function') updateFilters();
+}
+
+// Initialisation à l'affichage
+document.addEventListener("DOMContentLoaded", updateAffichageMois);
+
+
 
 </script>
 
@@ -540,6 +580,25 @@ select {
     text-align: left;
     border: 2px solid #111 !important;
 }
+
+
+
+/* Nouveau code couleur pour les absences/congés */
+.table-presence td.conge {
+    background: #e74c3c !important;   /* Rouge : Congé Payé */
+}
+.table-presence td.arret_maladie,
+.table-presence td.conge_maternite,
+.table-presence td.enfant_malade {
+    background: orange !important;    /* Orange : Maladie, Maternité, Enfant Malade */
+}
+.table-presence td.Revision,
+.table-presence td.Exam,
+.table-presence td.Formation {
+    background: #3498db !important;   /* Bleu : Révision, Examen, Formation */
+    color: #fff !important;
+}
+
 
 
 

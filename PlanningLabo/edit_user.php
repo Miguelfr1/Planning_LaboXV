@@ -47,7 +47,7 @@
     $laboratories = ['vaugirard', '351_vaugirard', 'mozart', 'grignon'];
 
     // Liste fixe des rôles possibles
-    $roles = ['Boss', 'Biologiste', 'Qualité', 'Préleveur', 'Bactério', 'Immuno', 'Secrétaire', 'Apprenti','Apprenti Bacterio','Apprenti Immuno', 'Apprenti Secretaire', 'Employé', 'Stagiaire'];
+    $roles = ['Boss', 'Biologiste', 'Qualité', 'Préleveur', 'Bactério', 'Immuno', 'Secrétaire', 'Apprenti','Apprenti Bacterio','Apprenti Immuno', 'Apprenti Secretaire', 'Employé', 'Stagiaire', "Agent d'entretien", 'Coursier' ];
 
     $error = "";
 

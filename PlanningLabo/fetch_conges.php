@@ -78,6 +78,8 @@ $groupe_roles = [
     'Immuno'     => 'Préleveurs',
     'Bactério'   => 'Préleveurs',
     'Préleveur'  => 'Préleveurs',
+    "Coursier" => "Coursiers",
+    "Agent d'entretien" => "Agents d'entretien"
 ];
 
 function premier_role($rolestr) {
@@ -96,8 +98,9 @@ $ordre_groupes = [
     "Préleveurs",
     "Secrétaires",
     "Apprentis",
-
     "Administratif - Qualité", 
+    "Coursiers",
+    "Agents d'entretien",
     "Autres"
 ];
 // Tri
@@ -152,11 +155,13 @@ foreach ($users as $user) {
     if ($congesRes) {
         while ($row = $congesRes->fetch_assoc()) {
             $absences[] = [
-                'start' => $row['start_date'],
-                'end' => $row['end_date'],
-                'type' => $absence_types[$row['absence_type']] ?? $row['absence_type'],
-                'id'   => $row['id']
+                'start'    => $row['start_date'],
+                'end'      => $row['end_date'],
+                'type'     => $absence_types[$row['absence_type']] ?? $row['absence_type'], // label
+                'raw_type' => $row['absence_type'], // ← garde la clé
+                'id'       => $row['id']
             ];
+            
         }
     }
 
@@ -189,27 +194,32 @@ foreach ($absences as $abs) {
     for ($d = 1; $d <= $daysInMonth; $d++) {
         $currentDate = sprintf('%04d-%02d-%02d', $year, $month, $d);
         $isAbsent = false;
-        $absenceType = '';
+        $absenceTypeKey = '';
+        $absenceTypeLabel = '';
         foreach ($absences as $abs) {
             if ($currentDate >= $abs['start'] && $currentDate <= $abs['end']) {
                 $isAbsent = true;
-                $absenceType = $abs['type'];
+                $absenceTypeKey = $abs['raw_type'] ?? '';
+                $absenceTypeLabel = $abs['type'];
                 break;
             }
         }
+        
         $isSunday = (date('w', strtotime($currentDate)) == 0);
         $isFerie = in_array($currentDate, $feries);
-
+    
         if ($isFerie) {
             $class = 'ferie';
         } elseif ($isSunday) {
             $class = 'sunday';
+        } elseif ($isAbsent && $absenceTypeKey) {
+            $class = $absenceTypeKey; // ex: "conge", "Revision", etc.
         } else {
-            $class = $isAbsent ? 'absent' : 'present';
+            $class = 'present';
         }
-        echo "<td class='$class'" . ($isAbsent ? " title='$absenceType'" : "") . "></td>";
+        echo "<td class='$class'" . ($isAbsent ? " title='$absenceTypeLabel'" : "") . "></td>";
     }
-
+    
     // Affiche le total des jours de congé
     echo "<td style='font-weight:bold;'>$total_days_off</td>";
 

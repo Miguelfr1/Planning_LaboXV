@@ -191,9 +191,11 @@ $userData = $userResult->fetch_assoc();
 				<option value="Apprenti">Apprenti Bacterio </option>
 				<option value="Apprenti">Apprenti Immuno </option>
 				<option value="Apprenti">Apprenti Secrétaire </option>
-
 				<option value="Collaborateur">Collaborateur</option>
 				<option value="Stagiaire">Stagiaire</option>
+				<option value="Coursier">Coursier</option>
+				<option value="Agent d'entretien">Agent d'entretien</option>
+
 
             </select>
 
